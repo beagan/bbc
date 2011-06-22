@@ -12,7 +12,7 @@ class UserStats(models.Model):
 	uid = models.ForeignKey(User)
 	usid = models.AutoField(primary_key=True)
 
-	lastgame = models.IntegerField()
+	game = models.IntegerField()
 	
 	abs = models.IntegerField()
 	tbs = models.IntegerField()
@@ -29,10 +29,6 @@ class UserStats(models.Model):
 	Ks = models.IntegerField()
 	Ws = models.IntegerField()
 	era = models.FloatField()
-	
-	
-	
-	
 
 class PitcherEntry(models.Model):
 	pid = models.AutoField(primary_key=True)

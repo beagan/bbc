@@ -84,36 +84,39 @@ def StatsHandler(request):
 		
 
 	for user in u:
-		try:
-		    stats = UserStats.objects.get(uid=user)
-		except ObjectDoesNotExist:
-			stats = UserStats.objects.create(uid=user,abs=0,tbs=0,rbis=0,bbs=0,sbs=0,slug=0,runs=0,ips=0,phits=0,pbbs=0,ers=0,Ks=0,Ws=0,era=0,lastgame=0)
-		for ent in user.entry_set.all():
-			stats.rbis = PlayerEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('RBIs'))['RBIs__sum']
+		max_game = Entry.objects.filter(uid = user).aggregate(Max('gamenumber'))['gamenumber__max']
+		for i in range(1,max_game):	
+			try:
+			    stats = UserStats.objects.get(uid=user,game=i)
+			except ObjectDoesNotExist:
+				stats = UserStats.objects.create(uid=user,abs=0,game=i,tbs=0,rbis=0,bbs=0,sbs=0,slug=0,runs=0,ips=0,phits=0,pbbs=0,ers=0,Ks=0,Ws=0,era=0)
 			
-			if (ent.gamenumber>stats.lastgame):
-				for p in ent.pitchers.all():
-					if p.IP!=None:
-						stats.ips = addIP(stats.ips,p.IP)
-				#abs  = PlayerEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('ABs'))
-				stats.abs = PlayerEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('ABs'))['ABs__sum']
-				stats.tbs = PlayerEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('TBs'))['TBs__sum']
-				stats.runs = PlayerEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('RUNs'))['RUNs__sum']
-				stats.bbs = PlayerEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('BBs'))['BBs__sum']
-				stats.sbs = PlayerEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('SBs'))['SBs__sum']
-				stats.phits = PitcherEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('HITs'))['HITs__sum']
-				stats.ers = PitcherEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('ERs'))['ERs__sum']
-				stats.pbbs = PitcherEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('BBs'))['BBs__sum']
-				stats.Ks = PitcherEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('Ks'))['Ks__sum']
-				stats.Ws = PitcherEntry.objects.filter(entry__uid__name=user.name).aggregate(Sum('W'))['W__sum']
-				stats.era = float(ipToOuts(stats.ips)) / float(stats.ers)/9
-				stats.slug = float(stats.tbs) /float(stats.abs)
+			
+			
 				
-
-			if (stats.lastgame<ent.gamenumber):
-				stats.lastgame=ent.gamenumber
+			for p in PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i):
+				if p.IP!=None:
+					stats.ips = addIP(stats.ips,p.IP)
+			stats.abs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('ABs'))['ABs__sum']
+			stats.tbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('TBs'))['TBs__sum']
+			stats.runs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('RUNs'))['RUNs__sum']
+			stats.rbis = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('RBIs'))['RBIs__sum']
+			stats.bbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('BBs'))['BBs__sum']
+			stats.sbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('SBs'))['SBs__sum']
+			stats.phits = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('HITs'))['HITs__sum']
+			stats.ers = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('ERs'))['ERs__sum']
+			stats.pbbs = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('BBs'))['BBs__sum']
+			stats.Ks = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('Ks'))['Ks__sum']
+			stats.Ws = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('W'))['W__sum']
+			if stats.ers > 0:
+				stats.era = round(float(ipToOuts(stats.ips))/float(stats.ers)/9,3)
+			else:
+				stats.era = 0
+			stats.slug = round(float(stats.tbs) /float(stats.abs),3)
+		
+			
 			stats.save()			
-	
+
 	c['stats'] = UserStats.objects.all()
 
 	message = render_to_response('stats.html', c,context_instance=RequestContext(request))
