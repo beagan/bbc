@@ -1,0 +1,365 @@
+
+from django.template import Context, loader, RequestContext
+from django.core.context_processors import csrf
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.http import HttpResponse
+from django.http import HttpResponseRedirect
+#from mysite.answers.models import Question, Answer, UserProfile, Tag, VoteQuestion, VoteAnswer, Comment, Badge, EarnedBadge, View
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import render_to_response
+from datetime import datetime, timedelta
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib import auth
+from django.utils import simplejson
+from django.db.models import Q
+from datetime import datetime
+from bbcstats.bbc.models import User, Entry, PitcherEntry, PlayerEntry
+from django.core.exceptions import ObjectDoesNotExist
+
+import re
+import urllib
+from BeautifulSoup import *
+
+def HomeHandler(request):
+	args = dict()
+	c = {}
+	
+	getData()
+	
+	c['entries'] = Entry.objects.all()
+	message = render_to_response('index.html', c,context_instance=RequestContext(request))
+	return HttpResponse(message)
+	
+
+def getData():
+	user = User.objects.get_or_create(name="MrBeagan", espnid=90973)
+	user = User.objects.get(espnid=90973)
+	for i in range(1,70):
+		try:
+		    ent = Entry.objects.get(uid=user,gamenumber=i)
+		except ObjectDoesNotExist:
+			player = Baseball(90973,i)
+			ent = Entry.objects.create(uid=user,gamenumber=i,points=0)
+			tpts=0
+			for i in player:
+				if 'TB' in i:
+					pts = int(i['R']) + int(i['TB']) + int(i['RBI']) + int(i['BB']) + int(i['SB'])
+					tpts += pts
+					name = i['FN'] + " " + i['LN']
+					pl = PlayerEntry.objects.create(eid=ent,name = name, Position = i['position'], espnid=i['id'], ABs=i['AB'], RUNs=i['R'], TBs=i['TB'], RBIs=i['RBI'], BBs=i['BB'], SBs=i['SB'],PTs=pts)
+					#print pl
+					pl.save()
+				if 'IP' in i:
+					ipfrac = int(round((float(i['IP'])-round(float(i['IP'])))*10,0))
+					ip = round(float(i['IP']))*3+ipfrac
+					name = i['FN']
+				
+					pts = ip + int(i['K']) - int(i['H']) - (3*int(i['ER'])) - int(i['BB']) + (5*(int(i['W'])))
+					tpts += pts
+					print i
+					pi = PitcherEntry.objects.create(eid=ent,name = name, IP = i['IP'], espnid = i['id'], espnid2 = 0, HITs = i['H'], ERs = i['ER'], BBs = i['BB'], Ks = i['K'], W = i['W'], PTs = pts)
+					pl.save
+			ent.points = tpts
+			ent.save()
+
+def Baseball(id, day):
+
+	s = "http://games.espn.go.com/baseball-challenge/en/entry?entryID=" + str(id) + "&spid=" + str(day)
+	sock = urllib.urlopen(s) 
+	htmlSource = sock.read()
+	sock.close() 
+	
+	soup = BeautifulSoup(htmlSource)
+	out = soup.findAll('td')
+
+	i=17
+	case=0
+	pcount = 0
+	player = [{},{},{},{},{},{},{},{},{},{}]
+	ps = {}
+	playersdone = 0
+	psactive = 0
+	while (i < len(out)):
+		if playersdone==1:
+			#print out[i]
+			#print case
+			#print out[i].string
+			if out[i].string == "PS":
+				psactive = 1
+				case = 0
+			if psactive == 1:
+				if case == 2:
+					s = str(out[i])
+					f = s.split('pFN\">')
+					player[9]['FN'] = ""
+					for n in f:
+						for c in n:
+							if c == '<':
+								break
+							if c.isalpha() or c == ' ':
+								player[9]['FN'] = player[9]['FN'] + c
+					s = str(out[i])
+					x = s.split('profile?playerId=')
+					#print x
+					id = 0
+					player[9]['id'] = ""
+					player[9]['id2'] = ""
+					for h in x:
+						#print h
+						for p in h:
+							if id ==0:
+								if p.isdigit():
+									player[9]['id'] = player[9]['id'] + p	
+								else:
+									if player[9]['id'] != "":
+										id = 1
+									break
+							if id ==1:
+								if p.isdigit():
+									player[9]['id2'] = player[9]['id2'] + p
+								else:
+									break				
+				if case == 5:
+					if out[i].string == None:
+						x = s.split('>')
+						for n in x:
+							for c in n:
+								if c.isdigit():
+									if 'IP' in player[9]:
+										player[9]['IP'] = int(player[9]['IP'])+int(c)
+									else:
+										player[9]['IP'] = int(c)
+								if c == '<':
+									break
+					else:
+						player[9]['IP'] = out[i].string
+				if case == 6:
+					if out[i].string == None:
+						x = s.split('>')
+						for n in x:
+							for c in n:
+								if c.isdigit():
+									if 'IP' in player[9]:
+										player[9]['H'] = int(player[9]['H'])+int(c)
+									else:
+										player[9]['H'] = int(c)
+								if c == '<':
+									break
+					else:
+						player[9]['H']=out[i].string
+				if case == 7:
+					if out[i].string == None:
+						x = s.split('>')
+						for n in x:
+							for c in n:
+								if c.isdigit():
+									if 'IP' in player[9]:
+										player[9]['ER'] = int(player[9]['ER'])+int(c)
+									else:
+										player[9]['ER'] = int(c)
+								if c == '<':
+									break
+					else:
+						player[9]['ER']=out[i].string
+				if case == 8:
+					if out[i].string == None:
+						x = s.split('>')
+						for n in x:
+							for c in n:
+								if c.isdigit():
+									if 'IP' in player[9]:
+										player[9]['BB'] = int(player[9]['BB'])+int(c)
+									else:
+										player[9]['BB'] = int(c)
+								if c == '<':
+									break
+					else:
+						player[9]['BB']=out[i].string
+				if case == 9:
+					if out[i].string == None:
+						x = s.split('>')
+						for n in x:
+							for c in n:
+								if c.isdigit():
+									if 'K' in player[9]:
+										player[9]['K'] = int(player[9]['K'])+int(c)
+									else:
+										player[9]['K'] = int(c)
+								if c == '<':
+									break
+					else:
+						player[9]['K']=out[i].string
+				if case == 10:
+					if out[i].string == None:
+						x = s.split('>')
+						for n in x:
+							for c in n:
+								if c.isdigit():
+									if 'W' in player[9]:
+										player[9]['W'] = int(player[9]['W'])+int(c)
+									else:
+										player[9]['W'] = int(c)
+								if c == '<':
+									break
+					else:
+						player[9]['W']=out[i].string
+				if case == 12:
+					s = str(out[i])
+					sal = s.split('<nobr>')
+					g = 0
+					p = sal[1][g]
+					player[9]['salary'] = ""
+					while p.isdigit() or p == '.':
+						player[9]['salary'] = player[9]['salary']+p
+						g+=1
+						p=sal[1][g]
+				if case == 13:	
+					psactive = 0
+					#print ps
+					#print player
+					#print "break"	
+				case +=1
+			i+=1
+		else:
+			#print out[i]
+			#print case
+			#print out[i].string
+			s = str(out[i])
+			if "player_eid" in s:
+				x = s.split('player_eid=\"')
+				for h in x:
+					g = 0
+					p = h[g]
+					player[pcount]['id'] = ""
+					while p.isdigit():
+						player[pcount]['id'] = player[pcount]['id'] + p
+						g+=1
+						p=h[g]
+			if case == 0:
+				player[pcount]['position'] = out[i].string
+			if case == 2:
+				s = str(out[i])
+				f = s.split('pFN\">')
+				player[pcount]['FN'] = ""
+				for n in f:
+					for c in n:
+						#print c
+						if c == '<':
+							break
+						if c.isalpha():
+							player[pcount]['FN'] = player[pcount]['FN'] + c
+			if case == 2:
+				s = str(out[i])
+				f = s.split('pLN\">')
+				player[pcount]['LN'] = ""
+				for n in f:
+					for c in n:
+						if c == '<':
+							break
+						if c.isalpha():
+							player[pcount]['LN'] = player[pcount]['LN'] + c
+			if case == 5:
+				if out[i].string == None:
+					x = s.split('>')
+					for n in x:
+						for c in n:
+							if c.isdigit():
+								if 'AB' in player[pcount]:
+									player[pcount]['AB'] = int(player[pcount]['AB'])+int(c)
+								else:
+									player[pcount]['AB'] = int(c)
+							if c == '<':
+								break
+				else:
+					player[pcount]['AB'] = out[i].string
+			if case == 6:
+				if out[i].string == None:
+					x = s.split('>')
+					for n in x:
+						for c in n:
+							if c.isdigit():
+								if 'R' in player[pcount]:
+									player[pcount]['R'] = int(player[pcount]['R'])+int(c)
+								else:
+									player[pcount]['R'] = int(c)
+							if c == '<':
+								break
+				else:
+					player[pcount]['R'] = out[i].string
+			if case == 7:
+				if out[i].string == None:
+					x = s.split('>')
+					for n in x:
+						for c in n:
+							if c.isdigit():
+								if 'TB' in player[pcount]:
+									player[pcount]['TB'] = int(player[pcount]['TB'])+int(c)
+								else:
+									player[pcount]['TB'] = int(c)
+							if c == '<':
+								break
+				else:
+					player[pcount]['TB'] = out[i].string
+			if case == 8:
+				if out[i].string == None:
+					x = s.split('>')
+					for n in x:
+						for c in n:
+							if c.isdigit():
+								if 'RBI' in player[pcount]:
+									player[pcount]['RBI'] = int(player[pcount]['RBI'])+int(c)
+								else:
+									player[pcount]['RBI'] = int(c)
+							if c == '<':
+								break
+				else:
+					player[pcount]['RBI'] = out[i].string
+			if case == 9:
+				if out[i].string == None:
+					x = s.split('>')
+					for n in x:
+						for c in n:
+							if c.isdigit():
+								if 'BB' in player[pcount]:
+									player[pcount]['BB'] = int(player[pcount]['BB'])+int(c)
+								else:
+									player[pcount]['BB'] = int(c)
+							if c == '<':
+								break
+				else:
+					player[pcount]['BB'] = out[i].string
+			if case == 10:
+				if out[i].string == None:
+					x = s.split('>')
+					for n in x:
+						for c in n:
+							if c.isdigit():
+								if 'SB' in player[pcount]:
+									player[pcount]['SB'] = int(player[pcount]['SB'])+int(c)
+								else:
+									player[pcount]['SB'] = int(c)
+							if c == '<':
+								break
+				else:
+					player[pcount]['SB'] = out[i].string
+			if case == 12:
+				s = str(out[i])
+				sal = s.split('<nobr>')
+				g = 0
+				p = sal[1][g]
+				player[pcount]['salary'] = ""
+				while p.isdigit() or p == '.':
+					player[pcount]['salary'] = player[pcount]['salary']+p
+					g+=1
+					p=sal[1][g]
+				case =-1
+				pcount +=1
+				if pcount == 9:
+					playersdone=1
+			i+=1
+			case+=1
+			#print case
+	return player
