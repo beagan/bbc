@@ -3,118 +3,221 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>Question Answers</title>
-    <style type="text/css">
-    	H1 {font-size: 20px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
-    	H2 {font-size: 18px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
-    	H3 {font-size: 16px; font-variant:small-caps;font-family: Helvetica, Verdana, Arial, sans-serif;background:#c0c0c0; border: 1px solid #aaa;
-    	text-align: left;
-    	.post-tag {
-background-color:#E0EAF1;
-border-bottom:1px solid #3E6D8E;
-border-right:1px solid #7F9FB6;
-color:#3E6D8E;
-font-size:90%;
-line-height:2.4;
-margin:2px 2px 2px 0;
-padding:3px 4px;
-text-decoration:none;
-white-space:nowrap;
-}}
 
-	body {font-size: 12px; font-family: Verdana , sans-serif, Arial;}
-    	a:visited,a:link { font-size:14px; font-variant:small-caps; color: #000080; text-decoration:underline; text-transform:capitalize;}
-    	table { border: 1px solid #aaa; } 
-    	td { border-width: thin; 
-    	border-style: outset; }
+	    <style type="text/css">
+	        H1 {font-size: 20px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
+	        H2 {font-size: 18px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
+	        H3 {font-size: 16px; font-variant:small-caps;font-family: Helvetica, Verdana, Arial, sans-serif;background:#c0c0c0; border: 1px solid #aaa;
+	        text-align: left;
+	        .post-tag {
+	background-color:#E0EAF1;
+	border-bottom:1px solid #3E6D8E;
+	border-right:1px solid #7F9FB6;
+	color:#3E6D8E;
+	font-size:90%;
+	line-height:2.4;
+	margin:2px 2px 2px 0;
+	padding:3px 4px;
+	text-decoration:none;
+	white-space:nowrap;
+	}}
 
-
-    </style>
-  </head>
-  <body>
-	<table>
-		<tr><td>Name</td><td>slugs</td><td>abs</td><td>runs</td><td>rbis</td><td>bbs</td></tr>	
-      {% for i in C %}
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
-
-{% endfor %}
-{% endfor %}
-
-{% for i in 1B %}
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
-
-{% endfor %}
-{% endfor %}
+	    body {font-size: 12px; font-family: Verdana , sans-serif, Arial;}
+	        a:visited,a:link { font-size:14px; font-variant:small-caps; color: #000080; text-decoration:underline; text-transform:capitalize;}
+	        table { border: 1px solid #aaa; } 
+	        td { border-width: thin; 
+	        border-style: outset; }
 
 
+	    </style>
 
-{% for i in 2B %}
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.js"></script>
+	<link href="styles.css" rel="stylesheet" type="text/css" />
+	
+	<script type="text/javascript">
+	$(function() {
+		$('tr.parent')
+			.css("cursor","pointer")
+			.attr("title","Click to expand/collapse")
+			.click(function(){
+				$(this).siblings('.child-'+this.id).toggle();
+			});
+		$('tr[@class^=child-]').hide().children('td');
+	});
+	</script>
+	
+</head>
+<body>
+	<table id="detail_table" class="detail">
+		<col style="width:80px;">
+		<col style="width:20px;">
 
-{% endfor %}
-{% endfor %}
+		<col style="width:40px;">
+		<col style="width:40px;">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>slugs</th>
+			<th>abs</th>
+			<th>abs</th>
+			<th>abs</th>
+			<th>abs</th>
+			<th>abs</th>
+			<th>abs</th>
+		</tr>
+
+	</thead>
+	<tbody>
+	{% for i in C %}
+		<tr class="parent" id="rowC">
+			{% for t in totals.C %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		<tr class="child-rowC">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	{% for i in 1B %}
+		<tr class="parent" id="row1B">
+			{% for t in totals.1B %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		<tr class="child-row1B">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	
+		<tr class="parent" id="row2B">
+			{% for t in totals.2B %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		{% for i in 2B %}
+		<tr class="child-row2B">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	
+		<tr class="parent" id="row3B">
+			{% for t in totals.3B %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		{% for i in 3B %}
+		<tr class="child-row3B">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	
+		<tr class="parent" id="rowSS">
+			{% for t in totals.SS %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		{% for i in SS %}
+		<tr class="child-rowSS">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	
+		<tr class="parent" id="rowLF">
+			{% for t in totals.LF %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		{% for i in LF %}
+		<tr class="child-rowLF">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	
+		<tr class="parent" id="rowCF">
+			{% for t in totals.CF %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		{% for i in 1B %}
+		<tr class="child-rowCF">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	
+		<tr class="parent" id="rowRF">
+			{% for t in totals.RF %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		{% for i in RF %}
+		<tr class="child-rowRF">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	
+		<tr class="parent" id="rowDH">
+			{% for t in totals.DH %}
+				{% for tt in t %}
+					<td>{{tt}}</td>
+				{% endfor %}
+			{% endfor %}
+		</tr>
+		{% for i in DH %}
+		<tr class="child-rowDH">
+			{% for  s in i %}
+				<td>{{s}}</td>
+
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	</tbody>
+	</table>
 
 
-{% for i in 3B %}
 
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
 
-{% endfor %}
-{% endfor %}
 
-{% for i in SS %}
 
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
 
-{% endfor %}
-{% endfor %}
-
-{% for i in LF %}
-
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
-
-{% endfor %}
-{% endfor %}
-
-{% for i in RF %}
-
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
-
-{% endfor %}
-{% endfor %}
-
-{% for i in CF %}
-
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
-
-{% endfor %}
-{% endfor %}
-
-{% for i in DH %}
-
-<tr>
-{% for  s in i %}
-<td>{{s}}</td>
-
-{% endfor %}
-{% endfor %}
-
-</table>
-</body>
+</body>                                                                 
 </html>
-

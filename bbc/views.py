@@ -56,10 +56,10 @@ def HomeHandler(request):
 	c = {}
 	
 	getData(90973)
-	getData(96560)
+	#getData(96560)
 	getData(99345)
-	getData(77704)
-	getData(83443)
+	#getData(77704)
+	#getData(83443)
 	
 	u = User.objects.all()
 		
@@ -80,8 +80,6 @@ def StatsHandler(request):
 	c = {}
 	
 	u = User.objects.all()
-	e = Entry.objects.all()
-		
 
 	for user in u:
 		max_game = Entry.objects.filter(uid = user).aggregate(Max('gamenumber'))['gamenumber__max']
@@ -91,12 +89,11 @@ def StatsHandler(request):
 			except ObjectDoesNotExist:
 				stats = UserStats.objects.create(uid=user,abs=0,game=i,tbs=0,rbis=0,bbs=0,sbs=0,slug=0,runs=0,ips=0,phits=0,pbbs=0,ers=0,Ks=0,Ws=0,era=0)
 			
+			#Might need in future if change to doubleheader system
+			#for p in PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i):
+				#stats.ips = p.IP
 			
-			
-				
-			for p in PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i):
-				if p.IP!=None:
-					stats.ips = addIP(stats.ips,p.IP)
+			stats.ips = PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i).aggregate(Sum('IP'))['IP__sum']
 			stats.abs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('ABs'))['ABs__sum']
 			stats.tbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('TBs'))['TBs__sum']
 			stats.runs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('RUNs'))['RUNs__sum']
@@ -109,14 +106,20 @@ def StatsHandler(request):
 			stats.Ks = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('Ks'))['Ks__sum']
 			stats.Ws = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('W'))['W__sum']
 			if stats.ers > 0:
-				stats.era = round(float(ipToOuts(stats.ips))/float(stats.ers)/9,3)
+				stats.era = float(ipToOuts(stats.ips))/float(stats.ers)/9
 			else:
 				stats.era = 0
-			stats.slug = round(float(stats.tbs) /float(stats.abs),3)
-		
-			
+			if stats.abs > 0:
+				stats.slug = float(stats.tbs) /float(stats.abs)
+			else:
+				stats.slug = 0
+				
 			stats.save()			
 
+	u = User.objects.all()
+	#for user in u:
+	#	sum = UserStats.objects.filter(uid=user).aggregate(Sum)
+		
 	c['stats'] = UserStats.objects.all()
 
 	message = render_to_response('stats.html', c,context_instance=RequestContext(request))
@@ -130,7 +133,9 @@ def PositionStatsHandler(request):
 	
 	
 	positions = ["C","1B","2B","3B","SS","LF","CF","RF","DH"]
-	c={'C':[],'1B':[],'2B':[],'3B':[],'SS':[],'LF':[],'CF':[],'RF':[],'DH':[]}
+	positionstr = ["Catcher", "First Base", "Second Base", "Third Base", "Shortstop", "Left Field", "Center Field", "Right Field", "Designated Hitter"]
+	c={'pos':[], 'C':[],'1B':[],'2B':[],'3B':[],'SS':[],'LF':[],'CF':[],'RF':[],'DH':[],'totals':{}}
+	c['pos']=positions
 	for i in range (0,9):
 		e = PlayerEntry.objects.values('espnid').distinct().filter(entry__uid__name=user.name).filter(Position=positions[i])
 		for es in e:	
@@ -150,6 +155,18 @@ def PositionStatsHandler(request):
 			
 			c[positions[i]].append(p)
 	#print c
+	for i in range(0,9):
+		c['totals'][positions[i]] = []
+		ABs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(Position=positions[i]).aggregate(Sum('ABs'))
+		RUNs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(Position=positions[i]).aggregate(Sum('RUNs'))
+		TBs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(Position=positions[i]).aggregate(Sum('TBs'))
+		RBIs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(Position=positions[i]).aggregate(Sum('RBIs'))
+		BBs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(Position=positions[i]).aggregate(Sum('BBs'))
+		SBs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(Position=positions[i]).aggregate(Sum('SBs'))
+		PTs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(Position=positions[i]).aggregate(Sum('PTs'))
+		p = [positionstr[i],positions[i],"",ABs['ABs__sum'],RUNs['RUNs__sum'],TBs['TBs__sum'],RBIs['RBIs__sum'],BBs['BBs__sum'],SBs['SBs__sum'],PTs['PTs__sum']]
+		c['totals'][positions[i]].append(p)
+	print c['totals']
 	for posi in range (0,9):
 		c[positions[posi]] = sorted(c[positions[posi]], key=lambda p: p[3], reverse=True)
 	message = render_to_response('statspos.html', c,context_instance=RequestContext(request))
@@ -167,7 +184,7 @@ def getData(id):
 		ud = UserData(id)
 		user = User.objects.get_or_create(name=ud['name'], espnid=id)
 	user = User.objects.get(espnid=id)
-	for i in range(1,10):
+	for i in range(1,20):
 		try:
 		    ent = Entry.objects.get(uid=user,gamenumber=i)
 		except ObjectDoesNotExist:
