@@ -11,24 +11,44 @@ class User (models.Model):
 class UserStats(models.Model):
 	uid = models.ForeignKey(User)
 	usid = models.AutoField(primary_key=True)
-
 	game = models.IntegerField()
 	
-	abs = models.IntegerField()
-	tbs = models.IntegerField()
-	rbis = models.IntegerField()
-	bbs = models.IntegerField()
-	sbs = models.IntegerField()
-	slug = models.FloatField()
-	runs = models.IntegerField()
+	abs = models.IntegerField(null = True, blank = True)
+	tbs = models.IntegerField(null = True, blank = True)
+	rbis = models.IntegerField(null = True, blank = True)
+	bbs = models.IntegerField(null = True, blank = True)
+	sbs = models.IntegerField(null = True, blank = True)
+	slug = models.FloatField(null = True, blank = True)
+	runs = models.IntegerField(null = True, blank = True)
 	
-	ips = models.FloatField()
-	phits = models.IntegerField()
-	pbbs = models.IntegerField()
-	ers = models.IntegerField()
-	Ks = models.IntegerField()
-	Ws = models.IntegerField()
-	era = models.FloatField()
+	ips = models.FloatField(null = True, blank = True)
+	phits = models.IntegerField(null = True, blank = True)
+	pbbs = models.IntegerField(null = True, blank = True)
+	ers = models.IntegerField(null = True, blank = True)
+	Ks = models.IntegerField(null = True, blank = True)
+	Ws = models.IntegerField(null = True, blank = True)
+	era = models.FloatField(null = True, blank = True)
+
+class TotalStats(models.Model):
+	uid = models.ForeignKey(User)
+	tid = models.AutoField(primary_key=True)
+	
+	abs = models.IntegerField(null = True, blank = True)
+	tbs = models.IntegerField(null = True, blank = True)
+	rbis = models.IntegerField(null = True, blank = True)
+	bbs = models.IntegerField(null = True, blank = True)
+	sbs = models.IntegerField(null = True, blank = True)
+	slug = models.FloatField(null = True, blank = True)
+	runs = models.IntegerField(null = True, blank = True)
+	
+	ips = models.FloatField(null = True, blank = True)
+	phits = models.IntegerField(null = True, blank = True)
+	pbbs = models.IntegerField(null = True, blank = True)
+	ers = models.IntegerField(null = True, blank = True)
+	Ks = models.IntegerField(null = True, blank = True)
+	Ws = models.IntegerField(null = True, blank = True)
+	era = models.FloatField(null = True, blank = True)
+	points = models.IntegerField(null = True, blank = True)
 
 class PitcherEntry(models.Model):
 	pid = models.AutoField(primary_key=True)
@@ -42,6 +62,7 @@ class PitcherEntry(models.Model):
 	Ks = models.IntegerField()
 	W = models.IntegerField()
 	PTs = models.IntegerField()
+	salary = models.FloatField()
 
 class PlayerEntry(models.Model):
 	pid = models.AutoField(primary_key=True)
@@ -55,6 +76,7 @@ class PlayerEntry(models.Model):
 	BBs = models.IntegerField()
 	SBs = models.IntegerField()
 	PTs = models.IntegerField()
+	salary = models.FloatField()
 
 class Entry(models.Model):
 	uid = models.ForeignKey(User)
@@ -63,5 +85,3 @@ class Entry(models.Model):
 	points = models.IntegerField()
 	players = models.ManyToManyField(PlayerEntry)
 	pitchers = models.ManyToManyField(PitcherEntry)
-		
-

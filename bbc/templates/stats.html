@@ -35,7 +35,7 @@ white-space:nowrap;
 		<tr><td>Name</td><td>abs</td><td>tbs</td><td>rbis</td><td>bbs</td><td>sbs</td><td>slug</td><td>runs</td><td>era</td><td>ips</td><td>ers</td><td>phits</td><td>Ws</td></tr>	
       {% for i in stats %}
 <tr>
-			<td>{{i.uid.name}}</td><td>{{i.abs}}</td><td>{{i.tbs}}</td><td>{{i.rbis}}</td><td>{{i.bbs}}</td><td>{{i.sbs}}</td><td>{{i.slug|floatformat:3}}</td><td>{{i.runs}}</td><td>{{i.era|floatformat:3}}</td><td>{{i.ips}}</td><td>{{i.ers}}</td><td>{{i.phits}}</td><td>{{i.Ws}}</td></tr>
+			<td>{{i.uid.name}}</td><td>{{i.game}}</td><td>{{i.abs}}</td><td>{{i.tbs}}</td><td>{{i.rbis}}</td><td>{{i.bbs}}</td><td>{{i.sbs}}</td><td>{{i.slug|floatformat:3}}</td><td>{{i.runs}}</td><td>{{i.era|floatformat:3}}</td><td>{{i.ips}}</td><td>{{i.ers}}</td><td>{{i.phits}}</td><td>{{i.Ws}}</td></tr>
 	  {% endfor %}
 	
 
