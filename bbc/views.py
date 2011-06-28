@@ -17,7 +17,7 @@ from django.db.models import Q, Max, Sum, Avg
 from datetime import datetime
 from bbcstats.bbc.models import User, Entry, PitcherEntry, PlayerEntry, UserStats, TotalStats
 from django.core.exceptions import ObjectDoesNotExist
-
+import os.path
 import teams
 import re
 import urllib
@@ -73,12 +73,15 @@ def totalStatsUpdater(user):
 
 def HomeHandler(request):
 	args = dict()
+	
+	params= request.GET
+	
 	c = {}
 	getData(90973)
-#	getData(96560)
+	getData(96560)
 	getData(99345)
-#	getData(77704)
-#	getData(83443)
+	getData(77704)
+	getData(83443)
 	u = User.objects.all()
 		
 	for user in u:
@@ -105,37 +108,35 @@ def StatsHandler(request):
 			print i
 			try:
 				stats = UserStats.objects.get(uid=user,game=i)
-				print "got old"
 			except ObjectDoesNotExist:
 				stats = UserStats.objects.create(uid=user,abs=0,game=i,tbs=0,rbis=0,bbs=0,sbs=0,slug=0,runs=0,ips=0,phits=0,pbbs=0,ers=0,Ks=0,Ws=0,era=0)
-				print "made new"
 			#Might need in future if change to doubleheader system
 			#for p in PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i):
 				#stats.ips = p.IP
 			
-			stats.ips = PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i).aggregate(Sum('IP'))['IP__sum']
-			stats.abs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('ABs'))['ABs__sum']
-			stats.tbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('TBs'))['TBs__sum']
-			stats.runs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('RUNs'))['RUNs__sum']
-			stats.rbis = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('RBIs'))['RBIs__sum']
-			stats.bbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('BBs'))['BBs__sum']
-			stats.sbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('SBs'))['SBs__sum']
-			stats.phits = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('HITs'))['HITs__sum']
-			stats.ers = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('ERs'))['ERs__sum']
-			stats.pbbs = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('BBs'))['BBs__sum']
-			stats.Ks = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('Ks'))['Ks__sum']
-			stats.Ws = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('W'))['W__sum']
+				stats.ips = PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i).aggregate(Sum('IP'))['IP__sum']
+				stats.abs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('ABs'))['ABs__sum']
+				stats.tbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('TBs'))['TBs__sum']
+				stats.runs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('RUNs'))['RUNs__sum']
+				stats.rbis = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('RBIs'))['RBIs__sum']
+				stats.bbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('BBs'))['BBs__sum']
+				stats.sbs = PlayerEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('SBs'))['SBs__sum']
+				stats.phits = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('HITs'))['HITs__sum']
+				stats.ers = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('ERs'))['ERs__sum']
+				stats.pbbs = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('BBs'))['BBs__sum']
+				stats.Ks = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('Ks'))['Ks__sum']
+				stats.Ws = PitcherEntry.objects.filter(entry__gamenumber=i).filter(entry__uid__name=user.name).aggregate(Sum('W'))['W__sum']
 			
-			if stats.ers > 0:
-				stats.era = float(ipToOuts(stats.ips))/float(stats.ers)/9
-			else:
-				stats.era = 0
-			if stats.abs > 0:
-				stats.slug = float(stats.tbs) /float(stats.abs)
-			else:
-				stats.slug = 0
-			stats.save()
-			totalStatsUpdater(user)
+				if stats.ers > 0:
+					stats.era = float(ipToOuts(stats.ips))/float(stats.ers)/9
+				else:
+					stats.era = 0
+				if stats.abs > 0:
+					stats.slug = float(stats.tbs) /float(stats.abs)
+				else:
+					stats.slug = 0
+				stats.save()
+				totalStatsUpdater(user)
 			
 	u = User.objects.all()
 	#for user in u:
@@ -154,7 +155,7 @@ def PositionStatsHandler(request):
 	
 	positions = ["C","1B","2B","3B","SS","LF","CF","RF","DH"]
 	positionstr = ["Catcher", "First Base", "Second Base", "Third Base", "Shortstop", "Left Field", "Center Field", "Right Field", "Designated Hitter"]
-	c={'pos':[], 'C':[],'1B':[],'2B':[],'3B':[],'SS':[],'LF':[],'CF':[],'RF':[],'DH':[],'totals':{},'sums':[]}
+	c={'pos':[], 'C':[],'1B':[],'2B':[],'3B':[],'SS':[],'LF':[],'CF':[],'RF':[],'DH':[],'totals':{},'sums':[],'P':[]}
 	c['sums'] = TotalStats.objects.get(uid=user)
 	c['pos']=positions
 	for i in range (0,9):
@@ -182,6 +183,24 @@ def PositionStatsHandler(request):
 			
 			c[positions[i]].append(p)
 	#print c
+	pe = PitcherEntry.objects.values('espnid').distinct().filter(entry__uid__name=user.name)
+	for es in pe:
+		espnid = es['espnid']
+		ps = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(espnid=espnid)
+		ip = 0
+		name = ""
+		for p in ps:
+			ip = addIP(p.IP,ip)
+			name = p.name
+		hits = ABs = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(espnid=espnid).aggregate(Sum('HITs'))['HITs__sum']
+		ers = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(espnid=espnid).aggregate(Sum('ERs'))['ERs__sum']
+		bbs = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(espnid=espnid).aggregate(Sum('BBs'))['BBs__sum']
+		ks = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(espnid=espnid).aggregate(Sum('Ks'))['Ks__sum']
+		w = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(espnid=espnid).aggregate(Sum('W'))['W__sum']
+		pts = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(espnid=espnid).aggregate(Sum('PTs'))['PTs__sum']
+		pi = [name,ip,hits,ers,bbs,ks,w,pts]
+		c['P'].append(pi)
+		
 	for i in range(0,9):
 		c['totals'][positions[i]] = []
 		ABs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(Position=positions[i]).aggregate(Sum('ABs'))['ABs__sum']
@@ -196,6 +215,7 @@ def PositionStatsHandler(request):
 		p = [positionstr[i],positions[i],"",ABs,RUNs,TBs,RBIs,BBs,SBs,PTs,salary,ptspersalary ]
 		c['totals'][positions[i]].append(p)
 	print c['totals']
+	c['ptotals'] = TotalStats.objects.get(uid=user)
 	for posi in range (0,9):
 		c[positions[posi]] = sorted(c[positions[posi]], key=lambda p: p[3], reverse=True)
 	message = render_to_response('statspos.html', c,context_instance=RequestContext(request))
@@ -243,6 +263,7 @@ def getData(id):
 			ent.save()
 
 def UserData(id):
+
 	s = "http://games.espn.go.com/baseball-challenge/en/entry?entryID=" + str(id)
 	sock = urllib.urlopen(s) 
 	htmlSource = sock.read()
@@ -275,21 +296,28 @@ def UserData(id):
 	userdata['pct'] = li[1]
 	return userdata
 
-	
-def Baseball(id, day):
+def Baseball(id,day):
+	file = "/Users/Jason/bbcstats/bbc/data/" + str(id) + "&spid=" + str(day)
+	if not (os.path.isfile(file)):
+		s = "http://games.espn.go.com/baseball-challenge/en/format/ajax/getBoxscoreSnapshot?entryID=" + str(id) + "&spid=" + str(day)
+		sock = urllib.urlopen(s) 
+		htmlSource = sock.read()
+		sock.close() 
+		source = open(file,"w")
+		source.writelines(htmlSource)
+		source.close()
+
+	infile = open(file,"r")
+	html = infile.read()
 	#s = "http://games.espn.go.com/baseball-challenge/en/entry?entryID=" + str(id) + "&spid=" + str(day)
-	s = "http://games.espn.go.com/baseball-challenge/en/format/ajax/getBoxscoreSnapshot?entryID=" + str(id) + "&spid=" + str(day)
-	sock = urllib.urlopen(s) 
-	htmlSource = sock.read()
-	sock.close() 
-	soup = BeautifulSoup(htmlSource)
+	soup = BeautifulSoup(html)
 	player = [{},{},{},{},{},{},{},{},{},{}]
-	
+
 	out = soup.findAll('td')
 	i=17
 	case=0
 	pcount = 0
-	
+
 	stats = {}
 	stats[5] = 'AB'
 	stats[6] = 'R'
@@ -308,13 +336,9 @@ def Baseball(id, day):
 	psactive = 0
 	psdh = 0
 	noopp=False
-	while (i < len(out)):
+	for i in range(17,len(out)+1):
 		if playersdone==1:
-			#print out[i]
-			#print case
-			#print out[i].string
-			
-			#if out[i].string == "PS":
+
 			if i==151:
 				psactive = 1
 				case = 0
@@ -330,7 +354,7 @@ def Baseball(id, day):
 								break
 							if c.isalpha() or c == ' ':
 								player[9]['Team'] = player[9]['Team'] + c
-					
+
 					s = str(out[i])
 					x = s.split('profile?playerId=')
 					id = 0
@@ -403,7 +427,6 @@ def Baseball(id, day):
 							x = s.split('>')
 							ip1 = ""
 							ip2 = ""
-							print x
 							for n in x:
 								for c in n:
 									if c.isdigit() or c == '.':
@@ -411,7 +434,7 @@ def Baseball(id, day):
 											ip2 = ip2 + c
 										else:
 											ip1 = ip1 + c
-									
+
 									if c == '<':
 										if ip1 != "":
 											psdh = 1
@@ -450,11 +473,8 @@ def Baseball(id, day):
 						p=sal[1][g]
 				if case == 13:	
 					psactive = 0
-					#print ps
-					#print player
-					#print "break"	
 				case +=1
-			i+=1
+			#i+=1
 		else:
 			#print out[i]
 			#print case
@@ -492,7 +512,6 @@ def Baseball(id, day):
 							break;
 						if ch.isalpha():
 							player[pcount]['opppit'] = player[pcount]['opppit'] + ch
-								#print player[9]['opp']
 			if case == 0:
 				player[pcount]['position'] = out[i].string
 			if case == 2:
@@ -544,7 +563,5 @@ def Baseball(id, day):
 				pcount +=1
 				if pcount == 9:
 					playersdone=1
-			i+=1
 			case+=1
-			#print case
 	return player

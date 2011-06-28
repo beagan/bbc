@@ -31,20 +31,14 @@ white-space:nowrap;
     </style>
   </head>
   <body>
-	<table width="100%" border="0" cellspacing="0" cellpadding="5">
-	<tr>
-	
-		
-{% for i in users  %}
-<td width="25%">
-	<table width="100%" border="0" cellspacing="0" cellpadding="1">
-		<tr><td>{{i.name}}</td></tr>
-		
 
-	{% for item in i.entry_set.all %}
-	<tr><td>{{item.gamenumber}}</td><td>{{item.points}}</td><td>{% for i in item.pitchers.all %}{{i.name}}</td>	</tr>{% endfor %}	
+	<table width="100%" border="0" cellspacing="0" cellpadding="1">
+	{% for i in users  %}
+		<tr><col style="width:80px;"><td colspan = 4>{{i.name}}</td>
+		{% for item in i.entry_set.all %}
+			<td>{{item.points}}</td>	
 	{% endfor %}
-	</td></table>
+	</td>
 {% endfor %}
 </table>
 </body>
