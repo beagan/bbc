@@ -34,7 +34,7 @@ white-space:nowrap;
 
 	<table width="100%" border="0" cellspacing="0" cellpadding="1">
 	{% for i in users  %}
-		<tr><col style="width:80px;"><td colspan = 4>{{i.name}}</td>
+		<tr><td><a href = "./posstats?id={{i.espnid}}">{{i.name}}</td>
 		{% for item in i.entry_set.all %}
 			<td>{{item.points}}</td>	
 	{% endfor %}

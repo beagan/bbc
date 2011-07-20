@@ -29,9 +29,24 @@ class UserStats(models.Model):
 	Ws = models.IntegerField(null = True, blank = True)
 	era = models.FloatField(null = True, blank = True)
 
+class UserRank(models.Model):
+	uid = models.ForeignKey(User)
+	date = models.DateField()
+	rank = models.CharField(max_length=30)
+	pct = models.CharField(max_length=30)
+
+class UserTransactionLog(models.Model):
+	uid = models.ForeignKey(User)
+	dropped = models.CharField(max_length=500)
+	droppedat = models.FloatField()
+	added = models.CharField(max_length=500)
+	addedat = models.FloatField()	
+
 class TotalStats(models.Model):
 	uid = models.ForeignKey(User)
 	tid = models.AutoField(primary_key=True)
+	
+	maxgame = models.IntegerField(null = True, blank = True)
 	
 	abs = models.IntegerField(null = True, blank = True)
 	tbs = models.IntegerField(null = True, blank = True)
@@ -50,11 +65,39 @@ class TotalStats(models.Model):
 	era = models.FloatField(null = True, blank = True)
 	points = models.IntegerField(null = True, blank = True)
 
+class TotalTeamStats(models.Model):
+	uid = models.ForeignKey(User)
+	tid = models.AutoField(primary_key=True)
+	
+	teamid = models.IntegerField()
+	teamname = models.CharField(max_length=128)
+	
+	maxgame = models.IntegerField(null = True, blank = True)
+	
+	abs = models.IntegerField(null = True, blank = True)
+	tbs = models.IntegerField(null = True, blank = True)
+	rbis = models.IntegerField(null = True, blank = True)
+	bbs = models.IntegerField(null = True, blank = True)
+	sbs = models.IntegerField(null = True, blank = True)
+	slug = models.FloatField(null = True, blank = True)
+	runs = models.IntegerField(null = True, blank = True)
+
+	ips = models.FloatField(null = True, blank = True)
+	phits = models.IntegerField(null = True, blank = True)
+	pbbs = models.IntegerField(null = True, blank = True)
+	ers = models.IntegerField(null = True, blank = True)
+	Ks = models.IntegerField(null = True, blank = True)
+	Ws = models.IntegerField(null = True, blank = True)
+	era = models.FloatField(null = True, blank = True)
+	points = models.IntegerField(null = True, blank = True)
+
 class PitcherEntry(models.Model):
 	pid = models.AutoField(primary_key=True)
 	name = models.CharField(max_length=128)
 	espnid = models.IntegerField()
 	espnid2 = models.IntegerField()
+	teamid = models.IntegerField()
+	teamname = models.CharField(max_length=128)
 	IP = models.FloatField()
 	HITs = models.IntegerField()
 	ERs = models.IntegerField()
@@ -69,6 +112,8 @@ class PlayerEntry(models.Model):
 	name = models.CharField(max_length=128)
 	Position = models.CharField(max_length=128)
 	espnid = models.IntegerField()
+	teamid = models.IntegerField()
+	teamname = models.CharField(max_length=128)
 	ABs = models.IntegerField()
 	RUNs = models.IntegerField()
 	TBs = models.IntegerField()
