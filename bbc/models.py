@@ -8,27 +8,6 @@ class User (models.Model):
 	espnid = models.IntegerField()
 	totalpoints = models.IntegerField(null = True, blank = True)
 
-class UserStats(models.Model):
-	uid = models.ForeignKey(User)
-	usid = models.AutoField(primary_key=True)
-	game = models.IntegerField()
-	
-	abs = models.IntegerField(null = True, blank = True)
-	tbs = models.IntegerField(null = True, blank = True)
-	rbis = models.IntegerField(null = True, blank = True)
-	bbs = models.IntegerField(null = True, blank = True)
-	sbs = models.IntegerField(null = True, blank = True)
-	slug = models.FloatField(null = True, blank = True)
-	runs = models.IntegerField(null = True, blank = True)
-	
-	ips = models.FloatField(null = True, blank = True)
-	phits = models.IntegerField(null = True, blank = True)
-	pbbs = models.IntegerField(null = True, blank = True)
-	ers = models.IntegerField(null = True, blank = True)
-	Ks = models.IntegerField(null = True, blank = True)
-	Ws = models.IntegerField(null = True, blank = True)
-	era = models.FloatField(null = True, blank = True)
-
 class UserRank(models.Model):
 	uid = models.ForeignKey(User)
 	date = models.DateField()
@@ -41,6 +20,31 @@ class UserTransactionLog(models.Model):
 	droppedat = models.FloatField()
 	added = models.CharField(max_length=500)
 	addedat = models.FloatField()	
+
+class UserStats(models.Model):
+	uid = models.ForeignKey(User)
+	usid = models.AutoField(primary_key=True)
+	game = models.IntegerField()
+
+	abs = models.IntegerField(null = True, blank = True)
+	tbs = models.IntegerField(null = True, blank = True)
+	rbis = models.IntegerField(null = True, blank = True)
+	bbs = models.IntegerField(null = True, blank = True)
+	sbs = models.IntegerField(null = True, blank = True)
+	runs = models.IntegerField(null = True, blank = True)
+
+	ips = models.FloatField(null = True, blank = True)
+	phits = models.IntegerField(null = True, blank = True)
+	pbbs = models.IntegerField(null = True, blank = True)
+	ers = models.IntegerField(null = True, blank = True)
+	Ks = models.IntegerField(null = True, blank = True)
+	Ws = models.IntegerField(null = True, blank = True)
+
+	slug = models.FloatField(null = True, blank = True)
+	era = models.FloatField(null = True, blank = True)
+	runwin = models.IntegerField(null = True, blank = True)
+	rbiwin = models.IntegerField(null = True, blank = True)
+	ptsabs = models.FloatField(null = True, blank = True)
 
 class TotalStats(models.Model):
 	uid = models.ForeignKey(User)
@@ -65,6 +69,8 @@ class TotalStats(models.Model):
 	era = models.FloatField(null = True, blank = True)
 	points = models.IntegerField(null = True, blank = True)
 
+	ptsabs = models.FloatField(null = True, blank = True)
+	
 class TotalTeamStats(models.Model):
 	uid = models.ForeignKey(User)
 	tid = models.AutoField(primary_key=True)
@@ -90,6 +96,8 @@ class TotalTeamStats(models.Model):
 	Ws = models.IntegerField(null = True, blank = True)
 	era = models.FloatField(null = True, blank = True)
 	points = models.IntegerField(null = True, blank = True)
+
+	ptsabs = models.FloatField(null = True, blank = True)
 
 class PitcherEntry(models.Model):
 	pid = models.AutoField(primary_key=True)

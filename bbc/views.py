@@ -55,20 +55,33 @@ def totalStatsUpdater(user,maxgame):
 	    tot = TotalStats.objects.get(uid=user)
 	except ObjectDoesNotExist:
 		tot = TotalStats.objects.create(uid=user,abs=0,tbs=0,rbis=0,bbs=0,sbs=0,slug=0,runs=0,ips=0,phits=0,pbbs=0,ers=0,Ks=0,Ws=0,era=0)
+	ustat = UserStats.objects.filter(uid=user)
 	
-	tot.abs = UserStats.objects.filter(uid=user).aggregate(Sum('abs'))['abs__sum']
-	tot.tbs = UserStats.objects.filter(uid=user).aggregate(Sum('tbs'))['tbs__sum']
-	tot.rbis = UserStats.objects.filter(uid=user).aggregate(Sum('rbis'))['rbis__sum']
-	tot.bbs = UserStats.objects.filter(uid=user).aggregate(Sum('bbs'))['bbs__sum']
-	tot.slug = UserStats.objects.filter(uid=user).aggregate(Sum('slug'))['slug__sum']		
-	tot.runs = UserStats.objects.filter(uid=user).aggregate(Sum('runs'))['runs__sum']
-	tot.ips = UserStats.objects.filter(uid=user).aggregate(Sum('ips'))['ips__sum']
-	tot.phits = UserStats.objects.filter(uid=user).aggregate(Sum('phits'))['phits__sum']
-	tot.pbbs = UserStats.objects.filter(uid=user).aggregate(Sum('pbbs'))['pbbs__sum']
-	tot.ers = UserStats.objects.filter(uid=user).aggregate(Sum('ers'))['ers__sum']
-	tot.Ks = UserStats.objects.filter(uid=user).aggregate(Sum('Ks'))['Ks__sum']
-	tot.Ws = UserStats.objects.filter(uid=user).aggregate(Sum('Ws'))['Ws__sum']
-	tot.era = UserStats.objects.filter(uid=user).aggregate(Sum('era'))['era__sum']
+	tot.abs = ustat.all().aggregate(Sum('abs'))['abs__sum']
+	tot.tbs = ustat.all().aggregate(Sum('tbs'))['tbs__sum']
+	tot.rbis = ustat.all().aggregate(Sum('rbis'))['rbis__sum']
+	tot.bbs = ustat.all().aggregate(Sum('bbs'))['bbs__sum']
+	tot.runs = ustat.all().aggregate(Sum('runs'))['runs__sum']
+	for p in ustat.all():
+		tot.ips = addIP(tot.ips,p.ips)
+	tot.ips = ustat.all().aggregate(Sum('ips'))['ips__sum']
+	tot.phits = ustat.all().aggregate(Sum('phits'))['phits__sum']
+	tot.pbbs = ustat.all().aggregate(Sum('pbbs'))['pbbs__sum']
+	tot.ers = ustat.all().aggregate(Sum('ers'))['ers__sum']
+	tot.Ks = ustat.all().aggregate(Sum('Ks'))['Ks__sum']
+	tot.Ws = ustat.all().aggregate(Sum('Ws'))['Ws__sum']
+	
+	if tot.abs > 0:
+		tot.slug = float(tot.tbs) /float(tot.abs)
+		tot.ptsabs = float(tot.tbs+tot.runs+tot.rbis+tot.bbs+tot.sbs)/float(tot.abs)
+	else:
+		tot.slug = 0
+		tot.ptsabs = 0
+	if tot.ers > 0:
+		tot.era = float(ipToOuts(tot.ips))/float(tot.ers)/9
+	else:
+		tot.era = 0
+	
 	tot.points = user.totalpoints
 	tot.maxgame = maxgame
 	tot.save()
@@ -80,21 +93,37 @@ def totalStatsTeamUpdater(user,teamid,maxgame):
 			return
 	except ObjectDoesNotExist:
 		tot = TotalTeamStats.objects.create(uid=user,teamid=teamid,teamname=teams.team[teamid],abs=0,tbs=0,rbis=0,bbs=0,sbs=0,slug=0,runs=0,ips=0,phits=0,pbbs=0,ers=0,Ks=0,Ws=0,era=0)
-
-	tot.abs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('ABs'))['ABs__sum']
-	tot.tbs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('TBs'))['TBs__sum']
-	tot.rbis = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('RBIs'))['RBIs__sum']
-	tot.bbs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('BBs'))['BBs__sum']
-#	tot.slug = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('slug'))['slug__sum']		
-	tot.runs = PlayerEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('RUNs'))['RUNs__sum']
-	tot.ips = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('IP'))['IP__sum']
-	tot.phits = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('HITs'))['HITs__sum']
-	tot.pbbs = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('BBs'))['BBs__sum']
-	tot.ers = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('ERs'))['ERs__sum']
-	tot.Ks = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('Ks'))['Ks__sum']
-	tot.Ws = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('W'))['W__sum']
+		
+	pla = PlayerEntry.objects.filter(entry__uid=user).filter(teamid=teamid)
 	
-#	tot.era = PitcherEntry.objects.filter(entry__uid__name=user.name).filter(teamid=teamid).aggregate(Sum('era'))['era__sum']
+	tot.abs = pla.all().aggregate(Sum('ABs'))['ABs__sum']
+	tot.tbs = pla.all().aggregate(Sum('TBs'))['TBs__sum']
+	tot.rbis = pla.all().aggregate(Sum('RBIs'))['RBIs__sum']
+	tot.bbs = pla.all().aggregate(Sum('BBs'))['BBs__sum']
+	tot.runs = pla.all().aggregate(Sum('RUNs'))['RUNs__sum']
+	
+	pit = PitcherEntry.objects.filter(entry__uid=user).filter(teamid=teamid)
+	
+	for p in pit.all():
+		tot.ips = addIP(tot.ips,p.IP)
+		
+	tot.phits = pit.all().aggregate(Sum('HITs'))['HITs__sum']
+	tot.pbbs = pit.all().aggregate(Sum('BBs'))['BBs__sum']
+	tot.ers = pit.all().aggregate(Sum('ERs'))['ERs__sum']
+	tot.Ks = pit.all().aggregate(Sum('Ks'))['Ks__sum']
+	tot.Ws = pit.all().aggregate(Sum('W'))['W__sum']
+	
+	if tot.abs > 0:
+		tot.slug = float(tot.tbs) /float(tot.abs)
+		tot.ptsabs = float(tot.tbs+tot.runs+tot.rbis+tot.bbs+tot.sbs)/float(tot.abs)
+	else:
+		tot.slug = 0
+		tot.ptsabs = 0
+	if tot.ers > 0:
+		tot.era = float(ipToOuts(tot.ips))/float(tot.ers)/9
+	else:
+		tot.era = 0
+		
 #	tot.points = user.totalpoints
 	tot.maxgame= maxgame
 	tot.save()
@@ -111,6 +140,8 @@ def HomeHandler(request):
 	getData(99345)
 	getData(77704)
 	getData(83443)
+	getData(523)
+	getData(1652)
 	u = User.objects.all()
 		
 	for user in u:
@@ -150,6 +181,9 @@ def StatsHandler(request):
 					stats.rbis = t.players.all().aggregate(Sum('RBIs'))['RBIs__sum']
 					stats.bbs = t.players.all().aggregate(Sum('BBs'))['BBs__sum']
 					stats.sbs = t.players.all().aggregate(Sum('SBs'))['SBs__sum']
+					stats.ips = 0
+					for p in t.pitchers.all():
+						stats.ips = addIP(stats.ips,p.IP)
 					stats.ips = t.pitchers.all().aggregate(Sum('IP'))['IP__sum']
 					stats.phits = t.pitchers.all().aggregate(Sum('HITs'))['HITs__sum']
 					stats.pbbs = t.pitchers.all().aggregate(Sum('BBs'))['BBs__sum']
@@ -162,8 +196,25 @@ def StatsHandler(request):
 						stats.era = 0
 					if stats.abs > 0:
 						stats.slug = float(stats.tbs) /float(stats.abs)
+						stats.ptsabs = float(stats.tbs+stats.runs+stats.rbis+stats.bbs+stats.sbs)/float(stats.abs)
 					else:
 						stats.slug = 0
+						stats.ptsabs = 0
+					if stats.runs > stats.ers:
+						stats.runwin = 1
+					else:
+						if stats.runs == stats.ers:
+							stats.runwin = 0
+						else:
+							stats.runwin = -1
+					if stats.rbis > stats.ers:
+						stats.rbiwin = 1
+					else:
+						if stats.rbis == stats.ers:
+							stats.rbiwin = 0
+						else:
+							stats.rbiwin = -1
+					
 					stats.save()
 		for i in range(1,30):
 			totalStatsTeamUpdater(user,i,max_game)
@@ -289,7 +340,7 @@ def getData(id):
 		ud = UserData(id)
 		user = User.objects.get_or_create(name=ud['name'], espnid=id)
 	user = User.objects.get(espnid=id)
-	for i in range(1,102):
+	for i in range(1,111):
 		try:
 		    ent = Entry.objects.get(uid=user,gamenumber=i)
 		except ObjectDoesNotExist:
@@ -301,8 +352,8 @@ def getData(id):
 					pts = int(i['R']) + int(i['TB']) + int(i['RBI']) + int(i['BB']) + int(i['SB'])
 					tpts += pts
 					name = i['FN'] + " " + i['LN']
-					pl = PlayerEntry.objects.create(name = name, Position = i['position'], espnid=i['id'], ABs=i['AB'], RUNs=i['R'], TBs=i['TB'], RBIs=i['RBI'], BBs=i['BB'], SBs=i['SB'],PTs=pts, salary =i['salary'],teamid =i['teamid'],teamname=teams.team[int(i['teamid'])])
-					#print pl
+					pl,created = PlayerEntry.objects.get_or_create(name = name, Position = i['position'], espnid=i['id'], ABs=i['AB'], RUNs=i['R'], TBs=i['TB'], RBIs=i['RBI'], BBs=i['BB'], SBs=i['SB'],PTs=pts, salary =i['salary'],teamid =i['teamid'],teamname=teams.team[int(i['teamid'])])
+
 					ent.players.add(pl)
 				if 'IP' in i:
 					ipfrac = int(round((float(i['IP'])-round(float(i['IP'])))*10,0))
@@ -312,7 +363,7 @@ def getData(id):
 					pts = ip + int(i['K']) - int(i['H']) - (3*int(i['ER'])) - int(i['BB']) + (5*(int(i['W'])))
 					tpts += pts
 					#print i
-					pi = PitcherEntry.objects.create(name = name, IP = i['IP'], espnid = i['id'], espnid2 = 0, HITs = i['H'], ERs = i['ER'], BBs = i['BB'], Ks = i['K'], W = i['W'], PTs = pts,salary =i['salary'],teamid =i['teamid'],teamname=teams.team[int(i['teamid'])])
+					pi,created = PitcherEntry.objects.get_or_create(name = name, IP = i['IP'], espnid = i['id'], espnid2 = 0, HITs = i['H'], ERs = i['ER'], BBs = i['BB'], Ks = i['K'], W = i['W'], PTs = pts,salary =i['salary'],teamid =i['teamid'],teamname=teams.team[int(i['teamid'])])
 					ent.pitchers.add(pi)
 			ent.points = tpts
 			ent.save()
