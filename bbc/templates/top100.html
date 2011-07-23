@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Question Answers</title>
+    <style type="text/css">
+    	H1 {font-size: 20px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
+    	H2 {font-size: 18px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
+    	H3 {font-size: 16px; font-variant:small-caps;font-family: Helvetica, Verdana, Arial, sans-serif;background:#c0c0c0; border: 1px solid #aaa;
+    	text-align: left;
+    	.post-tag {
+background-color:#E0EAF1;
+border-bottom:1px solid #3E6D8E;
+border-right:1px solid #7F9FB6;
+color:#3E6D8E;
+font-size:90%;
+line-height:2.4;
+margin:2px 2px 2px 0;
+padding:3px 4px;
+text-decoration:none;
+white-space:nowrap;
+}}
+
+	body {font-size: 12px; font-family: Verdana , sans-serif, Arial;}
+    	a:visited,a:link { font-size:14px; font-variant:small-caps; color: #000080; text-decoration:underline; text-transform:capitalize;}
+    	table { border: 1px solid #aaa; } 
+    	td { border-width: thin; 
+    	border-style: outset; }
+
+
+    </style>
+  </head>
+  <body>
+	<table>
+		<tr><td>Name</td><td>game</td><td>abs</td><td>tbs</td><td>rbis</td><td>bbs</td><td>sbs</td><td>slug</td><td>pts/ab</td><td>runs</td><td>era</td><td>ips</td><td>ers</td><td>phits</td><td>Ws</td><td></td>runW<td>rbiW</td></tr>	
+      {% for i in lineup %}
+<tr>
+			<td>{{i.pid}}</td><td>{{i.name}}</td><td>{{i.catcher}}</td><td>{{i.firstbase}}</td><td>{{i.secondbase}}</td><td>{{i.thirdbase}}</td><td>{{i.shortstop}}</td><td>{{i.leftfield}}</td><td>{{i.centerfield}}</td><td>{{i.rightfield}}</td><td>{{i.dh}}</td><td>{{i.ps}}</td>
+	  {% endfor %}
+	
+
+
+
+</table>
+</body>
+</html>
+
