@@ -37,13 +37,20 @@ class UserStats(models.Model):
 	phits = models.IntegerField(null = True, blank = True)
 	pbbs = models.IntegerField(null = True, blank = True)
 	ers = models.IntegerField(null = True, blank = True)
-	Ks = models.IntegerField(null = True, blank = True)
-	Ws = models.IntegerField(null = True, blank = True)
+	ks = models.IntegerField(null = True, blank = True)
+	ws = models.IntegerField(null = True, blank = True)
 
 	slug = models.FloatField(null = True, blank = True)
 	era = models.FloatField(null = True, blank = True)
-	runwin = models.IntegerField(null = True, blank = True)
-	rbiwin = models.IntegerField(null = True, blank = True)
+	
+	runwin = models.IntegerField(default = 0)
+	runloss = models.IntegerField(default = 0)
+	runtie = models.IntegerField(default = 0)
+	
+	rbiwin = models.IntegerField(default = 0)
+	rbiloss = models.IntegerField(default = 0)
+	rbitie = models.IntegerField(default = 0)
+	
 	ptsabs = models.FloatField(null = True, blank = True)
 
 class TotalStats(models.Model):
@@ -64,11 +71,19 @@ class TotalStats(models.Model):
 	phits = models.IntegerField(null = True, blank = True)
 	pbbs = models.IntegerField(null = True, blank = True)
 	ers = models.IntegerField(null = True, blank = True)
-	Ks = models.IntegerField(null = True, blank = True)
-	Ws = models.IntegerField(null = True, blank = True)
+	ks = models.IntegerField(null = True, blank = True)
+	ws = models.IntegerField(null = True, blank = True)
 	era = models.FloatField(null = True, blank = True)
 	points = models.IntegerField(null = True, blank = True)
-
+	
+	runwin = models.IntegerField(default = 0)
+	runloss = models.IntegerField(default = 0)
+	runtie = models.IntegerField(default = 0)
+	
+	rbiwin = models.IntegerField(default = 0)
+	rbiloss = models.IntegerField(default = 0)
+	rbitie = models.IntegerField(default = 0)
+	
 	ptsabs = models.FloatField(null = True, blank = True)
 	
 class TotalTeamStats(models.Model):
@@ -92,10 +107,18 @@ class TotalTeamStats(models.Model):
 	phits = models.IntegerField(null = True, blank = True)
 	pbbs = models.IntegerField(null = True, blank = True)
 	ers = models.IntegerField(null = True, blank = True)
-	Ks = models.IntegerField(null = True, blank = True)
-	Ws = models.IntegerField(null = True, blank = True)
+	ks = models.IntegerField(null = True, blank = True)
+	ws = models.IntegerField(null = True, blank = True)
 	era = models.FloatField(null = True, blank = True)
 	points = models.IntegerField(null = True, blank = True)
+
+	runwin = models.IntegerField(default = 0)
+	runloss = models.IntegerField(default = 0)
+	runtie = models.IntegerField(default = 0)
+	
+	rbiwin = models.IntegerField(default = 0)
+	rbiloss = models.IntegerField(default = 0)
+	rbitie = models.IntegerField(default = 0)
 
 	ptsabs = models.FloatField(null = True, blank = True)
 
@@ -107,6 +130,7 @@ class PitcherEntry(models.Model):
 	teamid = models.IntegerField()
 	teamname = models.CharField(max_length=128)
 	doubleheader = models.BooleanField()
+	nogame = models.BooleanField()
 	ip = models.FloatField()
 	hits = models.IntegerField()
 	ers = models.IntegerField()
@@ -125,6 +149,7 @@ class PlayerEntry(models.Model):
 	teamid = models.IntegerField()
 	teamname = models.CharField(max_length=128)
 	doubleheader = models.BooleanField()
+	nogame = models.BooleanField()
 	abs = models.IntegerField()
 	runs = models.IntegerField()
 	tbs = models.IntegerField()

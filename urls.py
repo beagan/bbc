@@ -11,6 +11,8 @@ urlpatterns = patterns('',
 	(r"^posstats", 'bbc.views.PositionStatsHandler'),
 	(r"^viewranks", 'bbc.views.viewRanks'),
 	(r"^viewtop100", 'bbc.views.viewTop100Lineup'),
+	(r"^viewtotalstats", 'bbc.views.viewTotalStatsHandler'),
+	
 	#(r"^$", 'bbcstats.views.HomeHandler'),
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
