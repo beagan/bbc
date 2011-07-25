@@ -12,6 +12,7 @@ urlpatterns = patterns('',
 	(r"^viewranks", 'bbc.views.viewRanks'),
 	(r"^viewtop100", 'bbc.views.viewTop100Lineup'),
 	(r"^viewtotalstats", 'bbc.views.viewTotalStatsHandler'),
+	(r"^userrequest", 'bbc.views.viewPlayerStats'),
 	
 	#(r"^$", 'bbcstats.views.HomeHandler'),
     # Uncomment the admin/doc line below to enable admin documentation:

@@ -32,10 +32,11 @@ white-space:nowrap;
   </head>
   <body>
 	<table>
-		<tr><td>Name</td><td>game</td><td>abs</td><td>tbs</td><td>rbis</td><td>bbs</td><td>sbs</td><td>slug</td><td>pts/ab</td><td>runs</td><td>era</td><td>ips</td><td>ers</td><td>phits</td><td>Ws</td><td></td>runW<td>rbiW</td></tr>	
+	<a href="file:///Users/Jason/bbcstats/bbc/top100.html"><img src="file:///Users/Jason/bbcdata/headshots/28658.jpg" alt="you suck"/></a>
+		<tr><td>Rank</td><td>Name</td><td>C</td><td>1B</td><td>2B</td><td>3B</td><td>SS</td><td>LF</td><td>CF</td><td>RF</td><td>DH</td><td>PS</td>
       {% for i in lineup %}
 <tr>
-			<td>{{i.pid}}</td><td>{{i.name}}</td><td>{{i.catcher}}</td><td>{{i.firstbase}}</td><td>{{i.secondbase}}</td><td>{{i.thirdbase}}</td><td>{{i.shortstop}}</td><td>{{i.leftfield}}</td><td>{{i.centerfield}}</td><td>{{i.rightfield}}</td><td>{{i.dh}}</td><td>{{i.ps}}</td>
+			<td>{{i.pid}}</td><td>{{i.name}}</td><td><img src="{{ STATIC_URL }}{{i.catcher}}.jpg" width = 33 length = 45 title = "{{i.catchername}}"/></td><td><img src="{{ STATIC_URL }}{{i.firstbase}}.jpg" width = 33 length = 45 title = "{{i.firstbasename}}"/></td><td><img src="{{ STATIC_URL }}{{i.secondbase}}.jpg" width = 33 length = 45  title = "{{i.secondbasename}}"/></td><td><img src="{{ STATIC_URL }}{{i.thirdbase}}.jpg" width = 33 length = 45 title = "{{i.thirdbasename}}"/></td><td><img src="{{ STATIC_URL }}{{i.shortstop}}.jpg" width = 33 length = 45 title = "{{i.shortstopname}}"/></td><td><img src="{{ STATIC_URL }}{{i.leftfield}}.jpg" width = 33 length = 45 title = "{{i.leftfieldname}}"/></td><td><img src="{{ STATIC_URL }}{{i.centerfield}}.jpg" width = 33 length = 45 title = "{{i.centerfieldname}}"/></td><td><img src="{{ STATIC_URL }}{{i.rightfield}}.jpg" width = 33 length = 45 title = "{{i.rightfieldname}}"/></td><td><img src="{{ STATIC_URL }}{{i.dh}}.jpg" width = 33 length = 45 title = "{{i.dhname}}"/></td><td><img src="{{ STATIC_URL }}{{i.ps}}.jpg" width = 33 length = 45 title = "{{i.psname}}"/></td>
 	  {% endfor %}
 	
 

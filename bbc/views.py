@@ -156,6 +156,7 @@ def HomeHandler(request):
 	args = dict()
 	
 	params= request.GET
+	start = date(today.year, 3 ,31)
 	
 	c = {}
 	u = User.objects.all()
@@ -324,7 +325,23 @@ def PositionStatsHandler(request):
 	
 	#for ent in user.entry_set.all():
 
+def viewPlayerStats(request):
+	params = {}
+	if request.method=='GET':
+		params = request.GET
+	elif request.method=='POST':
+		params = request.POST
+	uid=params["uid"]
+	
+	getData(uid)
+	
+	print uid
+	c = {}
 
+	c['users'] = User.objects.all()	
+	
+	message = render_to_response('index.html', c,context_instance=RequestContext(request))
+	return HttpResponse(message)
 
 def viewTotalStatsHandler(request):
 	args = dict()
@@ -332,6 +349,7 @@ def viewTotalStatsHandler(request):
 	c['stats'] = TotalStats.objects.all()	
 	message = render_to_response('totalstats.html', c,context_instance=RequestContext(request))
 	return HttpResponse(message)
+
 	
 	
 def viewRanks(request):
@@ -346,6 +364,8 @@ def viewRanks(request):
 		print i.rank
 		print i.date
 	return HttpResponse()	
+
+
 
 #def computeLog(request):
 #u = User.objects.all()
@@ -366,7 +386,7 @@ def getData(id):
 		ud = UserData(id)
 		user = User.objects.get_or_create(name=ud['name'], espnid=id)
 	user = User.objects.get(espnid=id)
-	for i in range(1,114):
+	for i in range(1,115):
 		try:
 		    ent = Entry.objects.get(uid=user,gamenumber=i)
 		except ObjectDoesNotExist:
@@ -435,29 +455,48 @@ def viewTop100Lineup(request):
 		leaders = getLeaders()
 		for i in range(1,len(leaders)+1):
 			l = parserLineup(leaders[i])
-			line = Lineup.objects.create(name="")
+			line = Lineup.objects.create(name=UserData(leaders[i])['name'])
 			for i in l:
 				if i['pos']=="C":
-					line.catcher = i['FN'] + " " + i['LN']
-					print i['FN'] + " " + i['LN']
+					line.catcher = i['espnid']
+					line.catchername = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="1B":
-					line.firstbase = i['FN'] + " " + i['LN']
+					line.firstbase = i['espnid']
+					line.firstbasename = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="2B":
-					line.secondbase = i['FN'] + " " + i['LN']
+					line.secondbase = i['espnid']
+					line.secondbasename = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="3B":
-					line.thirdbase = i['FN'] + " " + i['LN']
+					line.thirdbase = i['espnid']
+					line.thirdbasename = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="SS":
-					line.shortstop = i['FN'] + " " + i['LN']
+					line.shortstop = i['espnid']
+					line.shortstopname = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="LF":
-					line.leftfield = i['FN'] + " " + i['LN']
+					line.leftfield = i['espnid']
+					line.leftfieldname = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="CF":
-					line.centerfield = i['FN'] + " " + i['LN']
+					line.centerfield = i['espnid']
+					line.centerfieldname = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="RF":
-					line.rightfield = i['FN'] + " " + i['LN']
+					line.rightfield = i['espnid']
+					line.rightfieldname = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="DH":
-					line.dh = i['FN'] + " " + i['LN']
+					line.dh = i['espnid']
+					line.dhname = i['FN'] + " " + i['LN']
+					getHeadShot(i['espnid'])
 				if i['pos']=="PS":
-					line.ps = teams.team[int(i['teamid'])]
+					line.ps = i['id']
+					line.psname = i['p1FN'] + " " + i['p1LN']
+					getHeadShot(i['id'])
 				line.save()
 			top.top100.add(line)
 			top.save()
@@ -489,14 +528,17 @@ def getLeaders():
 
 def parserLineup(id):
 	file = "/Users/Jason/bbcdata/" + str(date.today()) + " " + str(id)
-		
+	
 	if not (os.path.isfile(file)):
 		s = "http://games.espn.go.com/baseball-challenge/en/format/ajax/getBoxscoreSnapshot?entryID=" + str(id)
-		sock = urllib.urlopen(s) 
-		htmlSource = sock.read()
-		sock.close() 
-		source = open(file,"w")
-		source.writelines(htmlSource)
+		request = urllib2.Request(s)
+		request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1')
+		
+		sock = urllib2.urlopen(s)
+		opener = urllib2.build_opener()
+		
+		source = open(file,"wb")
+		source.writelines(opener.open(request).read())
 		source.close()
 		
 	infile = open(file,"r")
@@ -509,7 +551,7 @@ def parserLineup(id):
 	pl = data[0].cssselect('tr')	
 	
 	player = [{},{},{},{},{},{},{},{},{},{}]
-	
+
 	i = 0
 	
 	for s in pl:
@@ -522,6 +564,7 @@ def parserLineup(id):
 		player[i]['espnid'] = l12.split('player_eid=\"')[1].split('\"')[0]
 		player[i]['teamid'] = l12.split('tid=\"')[1].split('\"')[0]
 		player[i]['salary'] = tostring(l1[12]).strip('<>td  = clasnobr///"')
+		player[i]['dh'] = False
 		if(l1[3].text != "--"):
 			player[i]['nogame'] = False
 			player[i]['oppteamid'] = tostring(l1[3]).split('teamId=')[1].split('\"')[0]
@@ -533,10 +576,9 @@ def parserLineup(id):
 			player[i]['loc'] = "Away"
 		else:
 			player[i]['loc'] = "Home"
+		l=0
 		i+=1
-		
 	p = data[1].cssselect("td")
-	
 	player[9]['pos'] = "PS"
 	p2 = tostring(p[2])
 	player[9]['id'] = 0
@@ -547,49 +589,81 @@ def parserLineup(id):
 		player[9]['nogame'] = False
 		if "\"roster-plyr\"" in p2:
 			player[9]['id'] = p2.split('playerId=')[1].split('\"')[0]
+			arr = getNameFromESPNID(player[9]['id'])
+			player[9]['p1FN'] = arr['FN']
+			player[9]['p1LN'] = arr['LN']
+			player[9]['p1SUF'] = arr['suffix']
 		player[9]['oppteamid'] = tostring(p[3]).split('teamId=')[1].split('\"')[0]
 		if p[5].text == None:
+			player[9]['id2'] = p2.split('playerId=')[2].split('\"')[0]
+			arr = getNameFromESPNID(player[9]['id2'])
+			player[9]['p2FN'] = arr['FN']
+			player[9]['p2LN'] = arr['LN']
+			player[9]['p2SUF'] = arr['suffix']
 			player[9]['dh'] = True
 	else:
 		player[9]['nogame'] = True
-		
 	player[9]['salary'] = tostring(p[12]).strip('<>td  = clasnobr///"')
-	
 	return player
 
 
+def getNameFromESPNID(id):
+	file = "/Users/Jason/bbcdata/player/" + str(id)
+	if not (os.path.isfile(file)):
+		s = "http://m.espn.go.com/mlb/playercard?playerId=" + str(id) + "&wjb"
+		
+		request = urllib2.Request(s)
+		request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1')
+		
+		sock = urllib2.urlopen(s)
+		opener = urllib2.build_opener()
+		source = open(file,"wb")
+		source.writelines(opener.open(request).read())
+		source.close()
+	infile = open(file,"r")
+	htmlsource = infile.read()
+	title = htmlsource.split("<div class=\"sub bold\">")[1].split("<")[0].split(" ")
+	i={}
+	i['num'] = title[0]
+	i['FN'] = title[1]
+	i['LN'] = title[2]
+	if len(title)>3:
+		i['suffix'] = title[3]
+	else:
+		i['suffix'] = None
+	return i	
+
 
 def parser(id,day):
-	#t = []
 	file = "/Users/Jason/bbcdata/" + str(id) + "&spid=" + str(day)
-	#t.append(time.time())#####
+	
 	if not (os.path.isfile(file)):
 		s = "http://games.espn.go.com/baseball-challenge/en/format/ajax/getBoxscoreSnapshot?entryID=" + str(id) + "&spid=" + str(day)
-		sock = urllib.urlopen(s) 
-		htmlSource = sock.read()
-		sock.close() 
-		source = open(file,"w")
-		source.writelines(htmlSource)
+		request = urllib2.Request(s)
+		request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1')
+		
+		sock = urllib2.urlopen(s)
+		opener = urllib2.build_opener()
+		source = open(file,"wb")
+		source.writelines(opener.open(request).read())
 		source.close()
 		
 	infile = open(file,"r")
 	htmlsource = infile.read()
-	
-	
-	#t.append(time.time())######
+	if htmlsource == "No set roster for entry<input type=hidden id=\"setInterval\" value=\"0\">":
+		print "no data"
+		return
 	root = html.fromstring(htmlsource)
 	
-	#t.append(time.time())######	
-	data = root.cssselect('tbody')
 	
-	#t.append(time.time())######
+	data = root.cssselect('tbody')
 	
 	pl = data[0].cssselect('tr')	
 	
 	player = [{},{},{},{},{},{},{},{},{},{}]
 	stat={5:"AB",6:"R",7:"TB",8:"RBI",9:"BB",10:"SB"}
 	i = 0
-	#t.append(time.time())##########
+	
 	for s in pl:
 		l1 = s.cssselect("td")
 		player[i]['pos'] = l1[0].text
@@ -617,25 +691,13 @@ def parser(id,day):
 			player[i]['nogame'] = True
 			for j in range(5,11):
 				player[i][stat[j]] = 0
-		#else:
-			#print "noop"
-		#player[i]['R'] = l1[6].text
-		#player[i]['TB'] = l1[7].text
-		#player[i]['RBI'] = l1[8].text
-		#player[i]['BB'] = l1[9].text
-		#player[i]['SB'] = l1[10].text
 		if "@" in str(l1[3]):
 			player[i]['loc'] = "Away"
 		else:
 			player[i]['loc'] = "Home"
 		l=0
 		i+=1
-	#p = data[1].cssselect('tr')[0].cssselect("td")
-#	t.append(time.time())###########
 	p = data[1].cssselect("td")
-	#for d in range(1,4):
-#		print d
-#		print tostring(p[d])
 	player[9]['pos'] = "PS"
 	p2 = tostring(p[2])
 	player[9]['id'] = 0
@@ -647,15 +709,26 @@ def parser(id,day):
 		player[9]['nogame'] = False
 		if "\"roster-plyr\"" in p2:
 			player[9]['id'] = p2.split('playerId=')[1].split('\"')[0]
+			arr = getNameFromESPNID(player[9]['id'])
+			player[9]['p1FN'] = arr['FN']
+			player[9]['p1LN'] = arr['LN']
+			player[9]['p1SUF'] = arr['suffix']
+			if arr['suffix'] == None:
+				print player[9]['p1FN'] + " " + player[9]['p1LN']
+			else:
+				print player[9]['p1FN'] + " " + player[9]['p1LN'] + " " + player[9]['p1SUF']
 		player[9]['oppteamid'] = tostring(p[3]).split('teamId=')[1].split('\"')[0]
 		if p[5].text == None:
 			player[9]['id2'] = p2.split('playerId=')[2].split('\"')[0]
+			arr = getNameFromESPNID(player[9]['id2'])
+			player[9]['p2FN'] = arr['FN']
+			player[9]['p2LN'] = arr['LN']
+			player[9]['p2SUF'] = arr['suffix']
 			player[9]['dh'] = True
 			for j in range(5,11):
 				s1 = p[j].cssselect('span')[0]
 				s2 = p[j].cssselect('span')[1]
-				player[9][statps[j]] = addIP(s1.text,s2.text)
-			
+				player[9][statps[j]] = addIP(s1.text,s2.text)			
 		else:
 			for j in range(5,11):
 				player[9][statps[j]] = p[j].text
@@ -664,9 +737,29 @@ def parser(id,day):
 		for j in range(5,11):
 			player[9][statps[j]] = 0
 	player[9]['salary'] = tostring(p[12]).strip('<>td  = clasnobr///"')
-#	t.append(time.time())
-#	t.append(time.time())
-#	for i in range (0,len(t)-1):
-#		print i
-#		print t[i+1]-t[i]
 	return player
+
+def getHeadShot(id):
+	#t = []
+	file = "/Users/Jason/bbcdata/headshots/" + str(id) + ".jpg"
+	if not (os.path.isfile(file)):
+		s = "http://a.espncdn.com/i/headshots/mlb/players/65/" + str(id) + ".jpg"
+		
+		request = urllib2.Request(s)
+		request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1')
+		
+		#sock = urllib2.urlopen(s)
+		opener = urllib2.build_opener()
+		source = open(file,"wb")
+		try:
+		    resp = opener.open(request)
+		except urllib2.URLError, e:
+			request2 = urllib2.Request("http://a.espncdn.com/i/columnists/nophoto_65x90.gif")
+			request2.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1')
+			opener2 = urllib2.build_opener()
+			resp2 = opener2.open(request2)
+			source.writelines(resp2.read())
+			source.close()
+		else:
+			source.writelines(resp.read())
+			source.close()

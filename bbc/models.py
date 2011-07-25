@@ -112,14 +112,6 @@ class TotalTeamStats(models.Model):
 	era = models.FloatField(null = True, blank = True)
 	points = models.IntegerField(null = True, blank = True)
 
-	runwin = models.IntegerField(default = 0)
-	runloss = models.IntegerField(default = 0)
-	runtie = models.IntegerField(default = 0)
-	
-	rbiwin = models.IntegerField(default = 0)
-	rbiloss = models.IntegerField(default = 0)
-	rbitie = models.IntegerField(default = 0)
-
 	ptsabs = models.FloatField(null = True, blank = True)
 
 class PitcherEntry(models.Model):
@@ -171,15 +163,25 @@ class Lineup(models.Model):
 	pid = models.AutoField(primary_key=True)
 	name = models.CharField(max_length=128,null = True, blank = True)
 	catcher = models.CharField(max_length=128,null = True, blank = True)
+	catchername = models.CharField(max_length=128,null = True, blank = True)
 	firstbase = models.CharField(max_length=128,null = True, blank = True)
+	firstbasename = models.CharField(max_length=128,null = True, blank = True)
 	secondbase = models.CharField(max_length=128,null = True, blank = True)
+	secondbasename = models.CharField(max_length=128,null = True, blank = True)
 	thirdbase = models.CharField(max_length=128,null = True, blank = True)
+	thirdbasename = models.CharField(max_length=128,null = True, blank = True)
 	shortstop = models.CharField(max_length=128,null = True, blank = True)
+	shortstopname = models.CharField(max_length=128,null = True, blank = True)
 	leftfield = models.CharField(max_length=128,null = True, blank = True)
+	leftfieldname = models.CharField(max_length=128,null = True, blank = True)
 	centerfield = models.CharField(max_length=128,null = True, blank = True)
+	centerfieldname = models.CharField(max_length=128,null = True, blank = True)
 	rightfield = models.CharField(max_length=128,null = True, blank = True)
+	rightfieldname = models.CharField(max_length=128,null = True, blank = True)
 	dh = models.CharField(max_length=128,null = True, blank = True)
+	dhname = models.CharField(max_length=128,null = True, blank = True)
 	ps = models.CharField(max_length=128,null = True, blank = True)
+	psname = models.CharField(max_length=128,null = True, blank = True)
 	
 class Top100Lineup(models.Model):
 	id = models.AutoField(primary_key=True)

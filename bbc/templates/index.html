@@ -41,6 +41,15 @@ white-space:nowrap;
 	</td>
 {% endfor %}
 </table>
+
+	<form method="POST" action="./userrequest">{% csrf_token %}
+		<textarea name="uid" cols="60" rows="1">Type your user id here</textarea><br/>
+
+		<input type="submit" value="View user"></input>
+
+	</form>
+
+
 </body>
 </html>
 
