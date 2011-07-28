@@ -31,45 +31,18 @@ white-space:nowrap;
     </style>
   </head>
   <body>
+	<table>
+		<tr><td>Name</td><td>game</td><td>abs</td><td>tbs</td><td>rbis</td><td>bbs</td><td>sbs</td><td>slug</td><td>pts/ab</td><td>runs</td><td>era</td><td>ips</td><td>ers</td><td>phits</td><td>Ws</td><td>runW</td><td>rbiW</td></tr>	
+
+ {% for i in log %}
+<tr>
+			<td>{{i.uid.name}}</td><td>{{i.gamenumber}}</td><td>{{i.dropped}}</td><td>{{i.droppedat}}</td><td>{{i.added}}</td><td>{{i.addedat}}</td></tr>
+	  {% endfor %}
+	{{total}}
 
 
-	<table width="100%" border="0" cellspacing="0" cellpadding="1">
-{% for item in users.object_list  %}
 
-
-<tr><td><a href = "./posstats?id={{item.espnid}}">{{item.name}}</td>
-<td>{{item.totalpoints}}</td>
-
-{% endfor %}
 </table>
-
-
-   <div class="pagination">
-<span class="step-links">
-    {% if users.has_previous %}
-        <a href="?page={{ ques.previous_page_number }}{% if tag %}&tag={{tag}}{% endif %}{% if sort %}&sort={{sort}}{% endif %}{% if order %}&order={{order}}{% endif %}">previous</a>
-    {% endif %}
-
-    <span class="current">
-        Page {{ users.number }} of {{ users.paginator.num_pages }}.
-    </span>
-
-    {% if users.has_next %}
-        <a href="?page={{ users.next_page_number }}{% if tag %}&tag={{tag}}{% endif %}{% if sort %}&sort={{sort}}{% endif %}{% if order %}&order={{order}}{% endif %}">next</a>
-    {% endif %}
-</span>
-
-</div>
-
-
-	<form method="POST" action="./userrequest">{% csrf_token %}
-		<textarea name="uid" cols="60" rows="1">Type your user id here</textarea><br/>
-
-		<input type="submit" value="View user"></input>
-
-	</form>
-
-
 </body>
 </html>
 

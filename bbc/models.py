@@ -19,7 +19,8 @@ class UserTransactionLog(models.Model):
 	dropped = models.CharField(max_length=500)
 	droppedat = models.FloatField()
 	added = models.CharField(max_length=500)
-	addedat = models.FloatField()	
+	addedat = models.FloatField()
+	gamenumber = models.IntegerField()
 
 class UserStats(models.Model):
 	uid = models.ForeignKey(User)
@@ -150,6 +151,7 @@ class PlayerEntry(models.Model):
 	sbs = models.IntegerField()
 	pts = models.IntegerField()
 	salary = models.FloatField()
+
 
 class Entry(models.Model):
 	uid = models.ForeignKey(User)

@@ -14,19 +14,24 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from django.utils import simplejson
 from django.db.models import Q, Max, Sum, Avg
+from django.core.exceptions import ObjectDoesNotExist
+
 
 from datetime import datetime
 from bbcstats.bbc.models import *
-from django.core.exceptions import ObjectDoesNotExist
-import os.path
-import teams
-import re
-import urllib, urllib2
 from datetime import date
 from BeautifulSoup import *
-import lxml.html
 from lxml import html
 from lxml.etree import tostring
+from StringIO import StringIO
+
+import os.path
+import re
+import urllib, urllib2
+import lxml.html
+import gzip
+import teams
+
 
 def ipFrac(i):
 	if i == None:
@@ -58,7 +63,7 @@ def addIP(i1,i2):
 		return float(i1)+float(i2)+1-.3
 
 def ipToOuts(ip):
-	return int(round(float(ip))) * 9 + ipFrac(ip)
+	return int(round(float(ip))) * 3 + ipFrac(ip)
 
 def totalStatsUpdater(user,maxgame):
 	try:
@@ -78,16 +83,19 @@ def totalStatsUpdater(user,maxgame):
 	tot.runs = ustat.all().aggregate(Sum('runs'))['runs__sum']
 	for p in ustat.all():
 		tot.ips = addIP(tot.ips,p.ips)
-	tot.ips = ustat.all().aggregate(Sum('ips'))['ips__sum']
 	tot.phits = ustat.all().aggregate(Sum('phits'))['phits__sum']
 	tot.pbbs = ustat.all().aggregate(Sum('pbbs'))['pbbs__sum']
 	tot.ers = ustat.all().aggregate(Sum('ers'))['ers__sum']
 	tot.ks = ustat.all().aggregate(Sum('ks'))['ks__sum']
 	tot.ws = ustat.all().aggregate(Sum('ws'))['ws__sum']
+
+	print user.name
 	
 	tot.rbiwin = ustat.all().aggregate(Sum('runwin'))['runwin__sum']
 	tot.rbitie = ustat.all().aggregate(Sum('runtie'))['runtie__sum']
 	tot.rbiloss = ustat.all().aggregate(Sum('runloss'))['runloss__sum']
+	
+
 		
 	tot.runwin = ustat.all().aggregate(Sum('rbiwin'))['rbiwin__sum']
 	tot.runtie = ustat.all().aggregate(Sum('rbitie'))['rbitie__sum']
@@ -100,7 +108,7 @@ def totalStatsUpdater(user,maxgame):
 		tot.slug = 0
 		tot.ptsabs = 0
 	if tot.ers > 0:
-		tot.era = float(ipToOuts(tot.ips))/float(tot.ers)/9
+		tot.era = float(tot.ers*9)/(float(ipToOuts(tot.ips))/3)
 	else:
 		tot.era = 0
 	
@@ -115,6 +123,8 @@ def totalStatsTeamUpdater(user,teamid,maxgame):
 			return
 	except ObjectDoesNotExist:
 		tot = TotalTeamStats.objects.create(uid=user,teamid=teamid)
+	
+	
 		
 	pla = PlayerEntry.objects.filter(entry__uid=user).filter(teamid=teamid)
 	
@@ -143,7 +153,7 @@ def totalStatsTeamUpdater(user,teamid,maxgame):
 		tot.slug = 0
 		tot.ptsabs = 0
 	if tot.ers > 0:
-		tot.era = float(ipToOuts(tot.ips))/float(tot.ers)/9
+		tot.era = float(tot.ers*9)/(float(ipToOuts(tot.ips))/3)
 	else:
 		tot.era = 0
 		
@@ -156,7 +166,10 @@ def HomeHandler(request):
 	args = dict()
 	
 	params= request.GET
-	start = date(today.year, 3 ,31)
+	
+#	today = date.today()
+#	start = date(today.year, 3 ,31)
+	getData(90973)
 	
 	c = {}
 	u = User.objects.all()
@@ -167,8 +180,22 @@ def HomeHandler(request):
 		user.totalpoints = Entry.objects.filter(uid__name=user.name).aggregate(Sum('points'))['points__sum']
 		user.save()
 		#print user.totalpoints
+
+	q= User.objects.all().order_by('totalpoints').reverse()
 	
-	c['users'] = User.objects.all()
+	paginator = Paginator(q, 10)
+	try:
+		page = int(request.GET.get('page', '1'))
+	except ValueError:
+		page = 1
+
+    # If page request (9999) is out of range, deliver last page of results.
+	try:
+		qs = paginator.page(page)
+	except (EmptyPage, InvalidPage):
+		qs = paginator.page(paginator.num_pages)
+	
+	c['users'] = qs
 	
 	message = render_to_response('index.html', c,context_instance=RequestContext(request))
 	return HttpResponse(message)
@@ -180,60 +207,62 @@ def StatsHandler(request):
 	
 	u = User.objects.all()
 	for user in u:
-		max_game = Entry.objects.filter(uid = user).aggregate(Max('gamenumber'))['gamenumber__max']
-		#print str(max_game) + "max "
-		for i in range(1,max_game+1):	
-			#print i
-			try:
-				stats = UserStats.objects.get(uid=user,game=i)
-			except ObjectDoesNotExist:
-				stats = UserStats.objects.create(uid=user,game=i)
-			#Might need in future if change to doubleheader system
-			#for p in PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i):
-				#stats.ips = p.IP
-				e = Entry.objects.filter(uid=user).filter(gamenumber=i)
-				for t in e:
-					stats.abs = t.players.all().aggregate(Sum('abs'))['abs__sum']
-					stats.tbs = t.players.all().aggregate(Sum('tbs'))['tbs__sum']
-					stats.runs = t.players.all().aggregate(Sum('runs'))['runs__sum']
-					stats.rbis = t.players.all().aggregate(Sum('rbis'))['rbis__sum']
-					stats.bbs = t.players.all().aggregate(Sum('bbs'))['bbs__sum']
-					stats.sbs = t.players.all().aggregate(Sum('sbs'))['sbs__sum']
-					stats.ips = 0
-					for p in t.pitchers.all():
-						stats.ips = addIP(stats.ips,p.ip)
-					stats.ips = t.pitchers.all().aggregate(Sum('ip'))['ip__sum']
-					stats.phits = t.pitchers.all().aggregate(Sum('hits'))['hits__sum']
-					stats.pbbs = t.pitchers.all().aggregate(Sum('bbs'))['bbs__sum']
-					stats.ers = t.pitchers.all().aggregate(Sum('ers'))['ers__sum']
-					stats.ks = t.pitchers.all().aggregate(Sum('ks'))['ks__sum']
-					stats.ws = t.pitchers.all().aggregate(Sum('w'))['w__sum']
-					if stats.ers > 0:
-						stats.era = float(ipToOuts(stats.ips))/float(stats.ers)/9
-					else:
-						stats.era = 0
-					if stats.abs > 0:
-						stats.slug = float(stats.tbs) /float(stats.abs)
-						stats.ptsabs = float(stats.tbs+stats.runs+stats.rbis+stats.bbs+stats.sbs)/float(stats.abs)
-					else:
-						stats.slug = 0
-						stats.ptsabs = 0
-					if stats.runs > stats.ers:
-						stats.runwin = 1
-					else:
-						if stats.runs == stats.ers:
-							stats.runtie = 1
+		max_game = Entry.objects.filter(uid=user).aggregate(Max('gamenumber'))['gamenumber__max']
+		e = Entry.objects.filter(uid=user)
+		max_game_stat = UserStats.objects.filter(uid = user).aggregate(Max('game'))['game__max'] 
+		if ((max_game != max_game_stat)) or max_game_stat == None:
+			for i in range(1,max_game+1):	
+				#print i
+				try:
+					stats = UserStats.objects.get(uid=user,game=i)
+				except ObjectDoesNotExist:
+					stats = UserStats.objects.create(uid=user,game=i)
+				#Might need in future if change to doubleheader system
+				#for p in PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i):
+					#stats.ips = p.IP
+					e = Entry.objects.filter(uid=user).filter(gamenumber=i)
+					for t in e:
+						stats.abs = t.players.all().aggregate(Sum('abs'))['abs__sum']
+						stats.tbs = t.players.all().aggregate(Sum('tbs'))['tbs__sum']
+						stats.runs = t.players.all().aggregate(Sum('runs'))['runs__sum']
+						stats.rbis = t.players.all().aggregate(Sum('rbis'))['rbis__sum']
+						stats.bbs = t.players.all().aggregate(Sum('bbs'))['bbs__sum']
+						stats.sbs = t.players.all().aggregate(Sum('sbs'))['sbs__sum']
+						stats.ips = 0
+						for p in t.pitchers.all():
+							stats.ips = addIP(stats.ips,p.ip)
+						stats.phits = t.pitchers.all().aggregate(Sum('hits'))['hits__sum']
+						stats.pbbs = t.pitchers.all().aggregate(Sum('bbs'))['bbs__sum']
+						stats.ers = t.pitchers.all().aggregate(Sum('ers'))['ers__sum']
+						stats.ks = t.pitchers.all().aggregate(Sum('ks'))['ks__sum']
+						stats.ws = t.pitchers.all().aggregate(Sum('w'))['w__sum']
+						if stats.ers > 0:
+							stats.era = float(stats.ers*9)/(float(ipToOuts(stats.ips))/3)
 						else:
-							stats.runloss = 1
-					if stats.rbis > stats.ers:
-						stats.rbiwin = 1
-					else:
-						if stats.rbis == stats.ers:
-							stats.rbitie = 1
+							stats.era = 0
+						if stats.abs > 0:
+							stats.slug = float(stats.tbs) /float(stats.abs)
+							stats.ptsabs = float(stats.tbs+stats.runs+stats.rbis+stats.bbs+stats.sbs)/float(stats.abs)
 						else:
-							stats.rbiloss = 1
+							stats.slug = 0
+							stats.ptsabs = 0
+						if stats.runs > stats.ers:
+							stats.runwin = 1
+						else:
+							if stats.runs == stats.ers:
+								
+								stats.runtie = 1
+							else:
+								stats.runloss = 1
+						if stats.rbis > stats.ers:
+							stats.rbiwin = 1
+						else:
+							if stats.rbis == stats.ers:
+								stats.rbitie = 1
+							else:
+								stats.rbiloss = 1
 					
-					stats.save()
+						stats.save()
 		for i in range(1,30):
 			totalStatsTeamUpdater(user,i,max_game)
 		#print "stats done"
@@ -337,7 +366,6 @@ def viewPlayerStats(request):
 	
 	print uid
 	c = {}
-
 	c['users'] = User.objects.all()	
 	
 	message = render_to_response('index.html', c,context_instance=RequestContext(request))
@@ -351,7 +379,44 @@ def viewTotalStatsHandler(request):
 	return HttpResponse(message)
 
 	
+
+#http://games.espn.go.com/baseball-challenge/en/groupfind?objectStart=0&_=1311614072844&xhr=1
+
+
+def getGroupUsers(id):
+	url = "http://games.espn.go.com/baseball-challenge/en/group?sort=-1&groupID=" + id + "&view=default&periodStart=15&periodEnd=21&objectStart=" + str(start) + "&_=1311623122175&xhr=1"
+	print url
+#	print = "http://games.espn.go.com/baseball-challenge/en/group?groupID=80&entryID=90973&sort=-1&view=default&periodStart=15&objectStart=100&_=1311623493268&xhr=1"
+	#baseball-challenge/en/groupfind?objectStart=60&_=1311619493877&xhr=1
+	data = {}
+	headers = {
+	'Accept': 'text/html, */*',
+	'Accept-Language': 'en-us,en;q=0.5',
+	'Content-Type': 'application/x-www-form-urlencoded',
+	'X-Requested-With': 'XMLHttpRequest',
 	
+	}
+	req = urllib2.Request(url, data, headers)
+	f = urllib2.urlopen(req)
+	htmlSource = f.read()
+	f.close()
+	
+	
+	root = html.fromstring(htmlSource)
+	leader = {}	
+	leaders = root.cssselect("tr")
+	x=1
+	for i in leaders:
+		line = tostring(i)
+		if "oddrow" in line or "evenrow" in line:
+			#print line.split('entryID=')[1].split('\"')[0]
+			leader[x] = line.split('entryID=')[1].split('\"')[0]
+			#print leader[x]
+			getData(leader[x])
+			x+=1
+	return leader
+
+
 def viewRanks(request):
 	u = User.objects.all()
 	for user in u:
@@ -367,17 +432,55 @@ def viewRanks(request):
 
 
 
-#def computeLog(request):
-#u = User.objects.all()
-#for user in u:
-#	ent = Entry.objects.filter(uid=user)
-#	for e in ent:
-#		prev = []
-#		if e.gamenumber == 1:
-#			for p in e.players.all():
-					
+def viewTransactionLog(request):
+	params = {}
+	if request.method=='GET':
+		params = request.GET
+	elif request.method=='POST':
+		params = request.POST
+	id=params["id"]
+	
+	user = User.objects.get(espnid=id)
+	ent = Entry.objects.filter(uid=user)
+	maxlog = UserTransactionLog.objects.filter(uid = user).aggregate(Max('gamenumber'))['gamenumber__max']
+	maxent = Entry.objects.filter(uid = user).aggregate(Max('gamenumber'))['gamenumber__max']
+	if not (maxlog==maxent):
+		for e in ent:
+			if e.gamenumber>1:
+				prev = Entry.objects.get(uid=user,gamenumber = e.gamenumber-1)
+				prevplayers = prev.players.all()
+				prevpitcher = prev.pitchers.all()
+				for p in e.players.all():
+					position = p.pos
+					#print p.name
+					prevpos = prevplayers.get(pos=position)
+					#print prevpos.name
+					if not (prevpos.espnid == p.espnid):
+						log = UserTransactionLog.objects.get_or_create(uid=user,dropped=prevpos.name,droppedat=prevpos.salary,added=p.name,addedat=p.salary,gamenumber=e.gamenumber)
+						#log.save()
+				for p in e.pitchers.all():
+					prevpit = prevpitcher.get(entry__uid=user)###drop the filter?
+					#print prevpit
 				
-			
+					if not (prevpit.teamid == p.teamid):
+						log = UserTransactionLog.objects.get_or_create(uid=user,dropped=prevpit.teamname,droppedat=prevpit.salary,added=p.teamname,addedat=p.salary,gamenumber=e.gamenumber)
+						#log.save()
+			else:
+				if e.gamenumber == 1:
+					for p in e.players.all():
+						log = UserTransactionLog.objects.get_or_create(uid=user,dropped="Nobody",droppedat=0.0,added=p.name,addedat=p.salary,gamenumber=e.gamenumber)
+						#log.save()
+					for pi in e.pitchers.all():
+						log = UserTransactionLog.objects.get_or_create(uid=user,dropped="Nobody",droppedat=0.0,added=p.teamname,addedat=p.salary,gamenumber=e.gamenumber)
+						#log.save()
+	c={}
+	log = UserTransactionLog.objects.filter(uid=user)
+	c['log'] = log
+	c['total'] = log.count()
+#	for i in UserTransactionLog.objects.all():
+#		print i.added + " " + i.dropped
+	message = render_to_response('viewlog.html', c,context_instance=RequestContext(request))
+	return HttpResponse(message)
 
 def getData(id):
 	try:
@@ -391,6 +494,8 @@ def getData(id):
 		    ent = Entry.objects.get(uid=user,gamenumber=i)
 		except ObjectDoesNotExist:
 			player = parser(id,i)
+			if player == 0:
+				return 
 			ent = Entry.objects.create(uid=user,gamenumber=i,points=0)
 			tpts=0
 			for i in player:
@@ -415,11 +520,29 @@ def getData(id):
 
 def UserData(id):
 	s = "http://games.espn.go.com/baseball-challenge/en/entry?entryID=" + str(id)
-	sock = urllib.urlopen(s) 
-	htmlSource = sock.read()
-	sock.close() 
 	
-	soup = BeautifulSoup(htmlSource)
+	file = "/Users/Jason/bbcdata/userdata/" + str(date.today().month) + "." + str(date.today().day) + "." + str(id) + ".html.gz"
+	if not (os.path.isfile(file)):
+		s = "http://games.espn.go.com/baseball-challenge/en/entry?entryID=" + str(id)
+		headers = {
+		'Accept': 'text/html, */*',
+		'Accept-Language': 'en-us,en;q=0.5',
+		'Accept-Encoding':	'gzip, deflate',
+		}
+		request = urllib2.Request(s,{},headers)
+		response = urllib2.urlopen(request)
+		if response.info().get('Content-Encoding') == 'gzip':
+			buf = StringIO( response.read())
+			f = gzip.GzipFile(fileobj=buf)
+			data = f.read()
+			output = gzip.open(file, 'wb')
+			output.write(data)
+			output.close()
+	infile = open(file,"r")
+	gzipper = gzip.GzipFile(fileobj=infile)
+	htmlsource = gzipper.read()
+	
+	soup = BeautifulSoup(htmlsource)
 	title = soup.title
 	
 	ss = re.split('<title>ESPN - Baseball Challenge - |</title>', str(title))
@@ -495,7 +618,8 @@ def viewTop100Lineup(request):
 					getHeadShot(i['espnid'])
 				if i['pos']=="PS":
 					line.ps = i['id']
-					line.psname = i['p1FN'] + " " + i['p1LN']
+					if 'p1FN' in i:
+						line.psname = i['p1FN'] + " " + i['p1LN']
 					getHeadShot(i['id'])
 				line.save()
 			top.top100.add(line)
@@ -508,50 +632,73 @@ def viewTop100Lineup(request):
 		
 	
 def getLeaders():
-	req = urllib2.Request('http://games.espn.go.com/baseball-challenge/en/leaderboard?segment=-1&scoringSystemID=2&periodStart=15&univ=0')
-	response = urllib2.urlopen(req)
-	htmlSource = response.read()
-	soup = BeautifulSoup(htmlSource)
-	
-	root = html.fromstring(htmlSource)
+	file = "/Users/Jason/bbcdata/leaderboard/" + "dayscoring" + "." + str(date.today().month) + "." + str(date.today().day) + ".html.gz"
+	if not (os.path.isfile(file)):
+		s = "http://games.espn.go.com/baseball-challenge/en/leaderboard?segment=-1&scoringSystemID=2&periodStart=15&univ=0"
+		headers = {
+		'Accept': 'text/html, */*',
+		'Accept-Language': 'en-us,en;q=0.5',
+		'Accept-Encoding':	'gzip, deflate',
+		}
+		request = urllib2.Request(s,{},headers)
+		response = urllib2.urlopen(request)
+		if response.info().get('Content-Encoding') == 'gzip':
+			buf = StringIO( response.read())
+			f = gzip.GzipFile(fileobj=buf)
+			data = f.read()
+			output = gzip.open(file, 'wb')
+			output.write(data)
+			output.close()
+	infile = open(file,"r")
+	gzipper = gzip.GzipFile(fileobj=infile)
+	htmlsource = gzipper.read()
+	root = html.fromstring(htmlsource)
 	leader = {}	
 	leaders = root.cssselect("tr")
 	x=1
 	for i in leaders:
 		line = tostring(i)
 		if "oddrow" in line or "evenrow" in line:
-			print line.split('entryID=')[1].split('\"')[0]
+			#print line.split('entryID=')[1].split('\"')[0]
 			leader[x] = line.split('entryID=')[1].split('\"')[0]
-			print leader[x]
+			getData(leader[x])
+			#print leader[x]
 			x+=1
 	return leader
 
 def parserLineup(id):
-	file = "/Users/Jason/bbcdata/" + str(date.today()) + " " + str(id)
+	file = "/Users/Jason/bbcdata/lineup/" + str(date.today()) + " " + str(id) + ".html.gz"
 	
 	if not (os.path.isfile(file)):
 		s = "http://games.espn.go.com/baseball-challenge/en/format/ajax/getBoxscoreSnapshot?entryID=" + str(id)
-		request = urllib2.Request(s)
-		request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1')
-		
-		sock = urllib2.urlopen(s)
-		opener = urllib2.build_opener()
-		
-		source = open(file,"wb")
-		source.writelines(opener.open(request).read())
-		source.close()
-		
+		headers = {
+		'Accept': 'text/html, */*',
+		'Accept-Language': 'en-us,en;q=0.5',
+		'Accept-Encoding':	'gzip, deflate',
+		}
+		request = urllib2.Request(s,{},headers)
+		response = urllib2.urlopen(request)
+		if response.info().get('Content-Encoding') == 'gzip':
+			buf = StringIO( response.read())
+			f = gzip.GzipFile(fileobj=buf)
+			data = f.read()
+			output = gzip.open(file, 'wb')
+			output.write(data)
+			output.close()
+		if response.read() == "No set roster for entry<input type=hidden id=\"setInterval\" value=\"0\">":
+			return 0
 	infile = open(file,"r")
-	htmlsource = infile.read()
-	
+	gzipper = gzip.GzipFile(fileobj=infile)
+	htmlsource = gzipper.read()
+	if htmlsource == "No set roster for entry<input type=hidden id=\"setInterval\" value=\"0\">":
+		print "no data"
+		return
 	root = html.fromstring(htmlsource)
-	
 	data = root.cssselect('tbody')
 	
 	pl = data[0].cssselect('tr')	
 	
 	player = [{},{},{},{},{},{},{},{},{},{}]
-
 	i = 0
 	
 	for s in pl:
@@ -635,35 +782,65 @@ def getNameFromESPNID(id):
 
 
 def parser(id,day):
-	file = "/Users/Jason/bbcdata/" + str(id) + "&spid=" + str(day)
+	file = "/Users/Jason/bbcdata/entry/" + str(id) + "&spid=" + str(day) + ".html.gz"
+	
+	file = "/Users/Jason/bbcdata/entry/" + str(id) + "/" + "spid=" + str(day) + ".html.gz"
+	#print file
+	path = "/Users/Jason/bbcdata/entry/" + str(id) + "/"
+	
+	oldfile = "/Users/Jason/bbcdata/entry/" + str(id) + "&spid=" + str(day) + ".html.gz"
+	
+	if not os.path.exists(path): os.makedirs(path)
 	
 	if not (os.path.isfile(file)):
-		s = "http://games.espn.go.com/baseball-challenge/en/format/ajax/getBoxscoreSnapshot?entryID=" + str(id) + "&spid=" + str(day)
-		request = urllib2.Request(s)
-		request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1')
+		if not (os.path.isfile(oldfile)):
 		
-		sock = urllib2.urlopen(s)
-		opener = urllib2.build_opener()
-		source = open(file,"wb")
-		source.writelines(opener.open(request).read())
-		source.close()
-		
+			s = "http://games.espn.go.com/baseball-challenge/en/format/ajax/getBoxscoreSnapshot?entryID=" + str(id) + "&spid=" + str(day)
+			headers = {
+			'Accept': 'text/html, */*',
+			'Accept-Language': 'en-us,en;q=0.5',
+			'Accept-Encoding':	'gzip, deflate',
+			}
+			request = urllib2.Request(s,{},headers)
+
+			response = urllib2.urlopen(request)
+
+			if response.info().get('Content-Encoding') == 'gzip':
+				buf = StringIO( response.read())
+				f = gzip.GzipFile(fileobj=buf)
+				data = f.read()
+				output = gzip.open(file, 'wb')
+				#print file
+				output.write(data)
+				output.close()
+			if response.read() == "No set roster for entry<input type=hidden id=\"setInterval\" value=\"0\">":
+				return 0
+		else:
+			infile = open(oldfile,"r")
+			gzipper = gzip.GzipFile(fileobj=infile)
+			data = gzipper.read()
+			os.remove(oldfile)
+			#print "removed " + oldfile
+			output = gzip.open(file, 'wb')
+			#print file
+			output.write(data)
+			output.close()
+
+			
 	infile = open(file,"r")
-	htmlsource = infile.read()
+	gzipper = gzip.GzipFile(fileobj=infile)
+	htmlsource = gzipper.read()
+	
 	if htmlsource == "No set roster for entry<input type=hidden id=\"setInterval\" value=\"0\">":
 		print "no data"
 		return
+		
 	root = html.fromstring(htmlsource)
-	
-	
 	data = root.cssselect('tbody')
-	
 	pl = data[0].cssselect('tr')	
-	
 	player = [{},{},{},{},{},{},{},{},{},{}]
 	stat={5:"AB",6:"R",7:"TB",8:"RBI",9:"BB",10:"SB"}
 	i = 0
-	
 	for s in pl:
 		l1 = s.cssselect("td")
 		player[i]['pos'] = l1[0].text
@@ -713,10 +890,6 @@ def parser(id,day):
 			player[9]['p1FN'] = arr['FN']
 			player[9]['p1LN'] = arr['LN']
 			player[9]['p1SUF'] = arr['suffix']
-			if arr['suffix'] == None:
-				print player[9]['p1FN'] + " " + player[9]['p1LN']
-			else:
-				print player[9]['p1FN'] + " " + player[9]['p1LN'] + " " + player[9]['p1SUF']
 		player[9]['oppteamid'] = tostring(p[3]).split('teamId=')[1].split('\"')[0]
 		if p[5].text == None:
 			player[9]['id2'] = p2.split('playerId=')[2].split('\"')[0]
