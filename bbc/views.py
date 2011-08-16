@@ -16,7 +16,7 @@ from django.utils import simplejson
 from django.db.models import Q, Max, Sum, Avg
 from django.core.exceptions import ObjectDoesNotExist
 
-
+import sqlite3
 
 
 from datetime import datetime
@@ -76,30 +76,28 @@ def totalStatsUpdater(user,maxgame):
 	except ObjectDoesNotExist:
 		tot = TotalStats.objects.create(uid=user)
 	
-	ustat = UserStats.objects.filter(uid=user)
+	entry = Entry.objects.filter(uid=user)
 	
-	agg = ustat.all().aggregate(Sum('abs'),Sum('tbs'),Sum('rbis'),Sum('bbs'),Sum('sbs'),Sum('runs'),Sum('phits'),Sum('pbbs'),Sum('ers'),Sum('ks'),Sum('ws'),Sum('rbiwin'),Sum('rbitie'),Sum('rbiloss'),Sum('runwin'),Sum('runtie'),Sum('runloss'))
+	agg = entry.all().aggregate(Sum('abs'),Sum('tbs'),Sum('rbis'),Sum('bbs'),Sum('sbs'),Sum('runs'),Sum('phits'),Sum('pbbs'),Sum('ers'),Sum('ks'),Sum('ws'),Sum('rbiwin'),Sum('rbitie'),Sum('rbiloss'),Sum('runwin'),Sum('runtie'),Sum('runloss'),Sum('points'))
 	tot.abs = agg['abs__sum']
 	tot.tbs = agg['tbs__sum']
 	tot.rbis = agg['rbis__sum']
 	tot.bbs = agg['bbs__sum']
 	tot.sbs = agg['sbs__sum']
 	tot.runs = agg['runs__sum']
-	for p in ustat.all():
+	for p in entry.all():
 		tot.ips = addIP(tot.ips,p.ips)
 	tot.phits = agg['phits__sum']
 	tot.pbbs = agg['pbbs__sum']
 	tot.ers = agg['ers__sum']
 	tot.ks = agg['ks__sum']
 	tot.ws = agg['ws__sum']
-
 	print user.name
 	
 	tot.runwin = agg['runwin__sum']
 	tot.runtie = agg['runtie__sum']
 	tot.runloss = agg['runloss__sum']
 	
-
 		
 	tot.rbiwin = agg['rbiwin__sum']
 	tot.rbitie = agg['rbitie__sum']
@@ -115,10 +113,10 @@ def totalStatsUpdater(user,maxgame):
 		tot.era = float(agg['ers__sum']*9)/(float(ipToOuts(tot.ips))/3)
 	else:
 		tot.era = 0
-	pts = Entry.objects.filter(uid=user).aggregate(Sum('points'))['points__sum']
+	pts = agg['points__sum']
 	tot.points = pts
-	user.totalpoints = pts
-	user.save()
+	#user.totalpoints = pts
+	#user.save()
 	tot.maxgame = maxgame
 	tot.save()
 
@@ -129,8 +127,6 @@ def totalStatsTeamUpdater(user,teamid,maxgame):
 			return
 	except ObjectDoesNotExist:
 		tot = TotalTeamStats.objects.create(uid=user,teamid=teamid)
-	
-	
 		
 	pla = PlayerEntry.objects.filter(entry__uid=user).filter(teamid=teamid)
 	agg = pla.all().aggregate(Sum('abs'),Sum('tbs'),Sum('rbis'),Sum('bbs'),Sum('sbs'),Sum('runs'))
@@ -192,7 +188,6 @@ def HomeHandler(request):
 	#		user.totalpoints = tpts.points
 	#	user.save()
 		#print user.totalpoints
-
 	q= User.objects.all().order_by('totalpoints').reverse()
 	
 	paginator = Paginator(q, 10)
@@ -200,13 +195,13 @@ def HomeHandler(request):
 		page = int(request.GET.get('page', '1'))
 	except ValueError:
 		page = 1
-
     # If page request (9999) is out of range, deliver last page of results.
 	try:
 		qs = paginator.page(page)
 	except (EmptyPage, InvalidPage):
 		qs = paginator.page(paginator.num_pages)
-	getAllUsers()
+	#getAllUsers()
+	getDataNew(90973)
 	c['users'] = qs
 	
 	message = render_to_response('index.html', c,context_instance=RequestContext(request))
@@ -221,68 +216,11 @@ def StatsHandler(request):
 	for user in u:
 		t1 = time.time()
 		max_game = Entry.objects.filter(uid=user).aggregate(Max('gamenumber'))['gamenumber__max']
-		max_game_stat = UserStats.objects.filter(uid = user).aggregate(Max('game'))['game__max'] 
 		if (((max_game != max_game_stat)) or max_game_stat == None) and max_game != None:
 			for i in range(1,max_game+1):	
 				#print i
-				try:
-					stats = UserStats.objects.get(uid=user,game=i)
-				except ObjectDoesNotExist:
-					stats = UserStats.objects.create(uid=user,game=i)
-				#Might need in future if change to doubleheader system
-				#for p in PitcherEntry.objects.filter(entry__uid=user).filter(entry__gamenumber=i):
-					#stats.ips = p.IP
-					e = Entry.objects.filter(uid=user).filter(gamenumber=i)
-					for t in e:
-						pl = t.players.all()
-						agg = pl.aggregate(Sum('abs'),Sum('tbs'),Sum('runs'),Sum('tbs'),Sum('runs'),Sum('rbis'),Sum('bbs'),Sum('sbs'))
-						stats.abs = agg['abs__sum']
-						stats.tbs = agg['tbs__sum']
-						stats.runs = agg['abs__sum']
-						
-						stats.tbs = agg['tbs__sum']
-						stats.runs = agg['runs__sum']
-						stats.rbis = agg['rbis__sum']
-						stats.bbs = agg['bbs__sum']
-						stats.sbs = agg['sbs__sum']
-						stats.ips = 0
-						pi = t.pitchers.all()
-						aggp = pi.aggregate(Sum('hits'),Sum('bbs'),Sum('ers'),Sum('ks'),Sum('w'))
-						for p in pi:
-							stats.ips = addIP(stats.ips,p.ip)
-						stats.phits = aggp['hits__sum']
-						stats.pbbs = aggp['bbs__sum']
-						stats.ers = aggp['ers__sum']
-						stats.ks = aggp['ks__sum']
-						stats.ws = aggp['w__sum']
-						if stats.ers > 0:
-							stats.era = float(stats.ers*9)/(float(ipToOuts(stats.ips))/3)
-						else:
-							stats.era = 0
-						if stats.abs > 0:
-							stats.slug = float(stats.tbs) /float(stats.abs)
-							stats.ptsabs = float(stats.tbs+stats.runs+stats.rbis+stats.bbs+stats.sbs)/float(stats.abs)
-						else:
-							stats.slug = 0
-							stats.ptsabs = 0
-						if stats.runs > stats.ers:
-							stats.runwin = 1
-						else:
-							if stats.runs == stats.ers:
-								stats.runtie = 1
-							else:
-								stats.runloss = 1
-						if stats.rbis > stats.ers:
-							stats.rbiwin = 1
-						else:
-							if stats.rbis == stats.ers:
-								stats.rbitie = 1
-							else:
-								stats.rbiloss = 1
-						
-						stats.save()
-			for i in range(1,30):
-				totalStatsTeamUpdater(user,i,max_game)
+				for i in range(1,30):
+					totalStatsTeamUpdater(user,i,max_game)
 		#print "stats done"
 		#print user.name
 			totalStatsUpdater(user,max_game)
@@ -534,8 +472,14 @@ def viewTransactionLog(request):
 def getData(id):
 	try:
 		user = User.objects.get(espnid=id)
-		max = user.maxgame
-		utpts = user.totalpoints
+		if user.maxgame == None:
+			max = 1
+		else:
+			max = user.maxgame
+		if user.totalpoints == None:
+			utpts = 0
+		else:
+			utpts = user.totalpoints
 	except ObjectDoesNotExist:
 		#ud = UserData(id)
 		name = getUserName(id).decode('latin1')
@@ -543,7 +487,7 @@ def getData(id):
 		user.save()
 		max = 1
 		utpts = 0
-	end = 120
+	end = 124
 	#print end
 	for day in range(max,end):
 		try:
@@ -552,7 +496,7 @@ def getData(id):
 			player = parser(id,day)
 			if player == 0:
 				return 
-			tpts=0
+			tpts = 0
 			if player != None:
 				ent = Entry.objects.create(uid=user,gamenumber=day,points=0)
 				abs = 0;tbs = 0;runs = 0;rbis = 0;bbs = 0;sbs = 0
@@ -578,6 +522,7 @@ def getData(id):
 					if 'IP' in i:
 						try:
 							pi = PitcherEntry.objects.get(teamid=i['teamid'],gamenumber=int(day))
+							tpts += pi.pts
 						except ObjectDoesNotExist:
 							ipfrac = int(round((float(i['IP'])-round(float(i['IP'])))*10,0))
 							ip = round(float(i['IP']))*3+ipfrac
@@ -640,13 +585,306 @@ def getData(id):
 				utpts += tpts
 				ent.points = tpts
 				ent.save()
-		user.maxgame = end
-		user.totalpoints = utpts
-		user.save()
+	for i in range(1,30):
+		totalStatsTeamUpdater(user,i,end)
+	#print "stats done"
+	#print user.name
+	totalStatsUpdater(user,end)
+	user.maxgame = end
+	user.totalpoints = utpts
+	user.save()
 	#pl = PlayerEntry.objects.all()
 	#print pl.count()
 	#pi = PitcherEntry.objects.all()
 	#print pi.count()
+
+
+def getDataNew(id):
+	file = "/Users/Jason/bbcdata/entrysql" + ".db"
+	conn = sqlite3.connect(file)
+	c = conn.cursor()
+	try:
+		user = User.objects.get(espnid=id)
+		if user.maxgame == None:
+			max = 1
+		else:
+			max = user.maxgame
+		if user.totalpoints == None:
+			utpts = 0
+		else:
+			utpts = user.totalpoints
+	except ObjectDoesNotExist:
+		#ud = UserData(id)
+		name = getUserName(id).decode('latin1')
+		user = User(name=name, espnid=id)
+		user.save()
+		max = 1
+		utpts = 0
+	end = 124
+	#print end
+	for day in range(1,end):
+		try:
+		    ent = Entry.objects.get(uid=user,gamenumber=day)
+		except ObjectDoesNotExist:
+			#change for null
+			ent = Entry.objects.create(uid=user,gamenumber=day,points=0)
+			tpts = 0
+			abs = 0;tbs = 0;runs = 0;rbis = 0;bbs = 0;sbs = 0
+			ips = 0;phits = 0;pbbs = 0;ers = 0;ks = 0;ws = 0
+			
+			#player = parser(id,day)
+			key = id *100000 + day
+			c.execute("SELECT * FROM catcher WHERE id = ?", (key,))
+			catcher = c.fetchone()
+			c.execute("SELECT * FROM firstbase WHERE id = ?", (key,))
+			firstbase = c.fetchone()
+			c.execute("SELECT * FROM secondbase WHERE id = ?", (key,))
+			secondbase = c.fetchone()
+			c.execute("SELECT * FROM thirdbase WHERE id = ?", (key,))
+			thirdbase = c.fetchone()
+			c.execute("SELECT * FROM shortstop WHERE id = ?", (key,))
+			shortstop = c.fetchone()
+			c.execute("SELECT * FROM leftfield WHERE id = ?", (key,))
+			leftfield = c.fetchone()
+			c.execute("SELECT * FROM centerfield WHERE id = ?", (key,))
+			centerfield = c.fetchone()
+			c.execute("SELECT * FROM rightfield WHERE id = ?", (key,))
+			rightfield = c.fetchone()
+			c.execute("SELECT * FROM dh WHERE id = ?", (key,))
+			dh = c.fetchone()
+			c.execute("SELECT * FROM ps WHERE id = ?", (key,))
+			ps = c.fetchone()
+			try:
+				pl = PlayerEntry.objects.get(espnid =catcher[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(catcher[11]) + int(catcher[12]) + int(catcher[13]) + int(catcher[14]) + int(catcher[15])
+				abs += int(catcher[10])
+				tbs += int(catcher[15])
+				runs += int(catcher[12])
+				rbis += int(catcher[13])
+				bbs += int(catcher[11])
+				sbs += int(catcher[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=catcher[5],gamenumber=int(day),pos="C",bbcid=catcher[6],doubleheader=catcher[16],nogame=catcher[18],abs=catcher[10],runs=catcher[12],tbs=catcher[15],rbis=catcher[13],bbs=catcher[11],sbs=catcher[14],pts=pts,salary=catcher[8],teamid=catcher[7],teamname=teams.team[int(catcher[7])],name = catcher[3] + " " + catcher[4])
+				
+				pl.save()
+			ent.players.add(pl)
+			try:
+				pl = PlayerEntry.objects.get(espnid =firstbase[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(firstbase[11]) + int(firstbase[12]) + int(firstbase[13]) + int(firstbase[14]) + int(firstbase[15])
+				abs += int(firstbase[10])
+				tbs += int(firstbase[15])
+				runs += int(firstbase[12])
+				rbis += int(firstbase[13])
+				bbs += int(firstbase[11])
+				sbs += int(firstbase[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=firstbase[5],gamenumber=int(day),pos="C",bbcid=firstbase[6],doubleheader=firstbase[16],nogame=firstbase[18],abs=firstbase[10],runs=firstbase[12],tbs=firstbase[15],rbis=firstbase[13],bbs=firstbase[11],sbs=firstbase[14],pts=pts,salary=firstbase[8],teamid=firstbase[7],teamname=teams.team[int(firstbase[7])],name = firstbase[3] + " " + firstbase[4])
+
+				pl.save()
+			ent.players.add(pl)	
+			try:
+				pl = PlayerEntry.objects.get(espnid =secondbase[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(secondbase[11]) + int(secondbase[12]) + int(secondbase[13]) + int(secondbase[14]) + int(secondbase[15])
+				abs += int(secondbase[10])
+				tbs += int(secondbase[15])
+				runs += int(secondbase[12])
+				rbis += int(secondbase[13])
+				bbs += int(secondbase[11])
+				sbs += int(secondbase[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=secondbase[5],gamenumber=int(day),pos="C",bbcid=secondbase[6],doubleheader=secondbase[16],nogame=secondbase[18],abs=secondbase[10],runs=secondbase[12],tbs=secondbase[15],rbis=secondbase[13],bbs=secondbase[11],sbs=secondbase[14],pts=pts,salary=secondbase[8],teamid=secondbase[7],teamname=teams.team[int(secondbase[7])],name = secondbase[3] + " " + secondbase[4])
+
+				pl.save()
+			ent.players.add(pl)	
+			try:
+				pl = PlayerEntry.objects.get(espnid =thirdbase[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(thirdbase[11]) + int(thirdbase[12]) + int(thirdbase[13]) + int(thirdbase[14]) + int(thirdbase[15])
+				abs += int(thirdbase[10])
+				tbs += int(thirdbase[15])
+				runs += int(thirdbase[12])
+				rbis += int(thirdbase[13])
+				bbs += int(thirdbase[11])
+				sbs += int(thirdbase[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=thirdbase[5],gamenumber=int(day),pos="C",bbcid=thirdbase[6],doubleheader=thirdbase[16],nogame=thirdbase[18],abs=thirdbase[10],runs=thirdbase[12],tbs=thirdbase[15],rbis=thirdbase[13],bbs=thirdbase[11],sbs=thirdbase[14],pts=pts,salary=thirdbase[8],teamid=thirdbase[7],teamname=teams.team[int(thirdbase[7])],name = thirdbase[3] + " " + thirdbase[4])
+
+				pl.save()
+			ent.players.add(pl)
+			try:
+				pl = PlayerEntry.objects.get(espnid =shortstop[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(shortstop[11]) + int(shortstop[12]) + int(shortstop[13]) + int(shortstop[14]) + int(shortstop[15])
+				abs += int(shortstop[10])
+				tbs += int(shortstop[15])
+				runs += int(shortstop[12])
+				rbis += int(shortstop[13])
+				bbs += int(shortstop[11])
+				sbs += int(shortstop[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=shortstop[5],gamenumber=int(day),pos="C",bbcid=shortstop[6],doubleheader=shortstop[16],nogame=shortstop[18],abs=shortstop[10],runs=shortstop[12],tbs=shortstop[15],rbis=shortstop[13],bbs=shortstop[11],sbs=shortstop[14],pts=pts,salary=shortstop[8],teamid=shortstop[7],teamname=teams.team[int(shortstop[7])],name = shortstop[3] + " " + shortstop[4])
+
+				pl.save()
+			ent.players.add(pl)	
+			try:
+				pl = PlayerEntry.objects.get(espnid =leftfield[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(leftfield[11]) + int(leftfield[12]) + int(leftfield[13]) + int(leftfield[14]) + int(leftfield[15])
+				abs += int(leftfield[10])
+				tbs += int(leftfield[15])
+				runs += int(leftfield[12])
+				rbis += int(leftfield[13])
+				bbs += int(leftfield[11])
+				sbs += int(leftfield[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=leftfield[5],gamenumber=int(day),pos="C",bbcid=leftfield[6],doubleheader=leftfield[16],nogame=leftfield[18],abs=leftfield[10],runs=leftfield[12],tbs=leftfield[15],rbis=leftfield[13],bbs=leftfield[11],sbs=leftfield[14],pts=pts,salary=leftfield[8],teamid=leftfield[7],teamname=teams.team[int(leftfield[7])],name = leftfield[3] + " " + leftfield[4])
+
+				pl.save()
+			ent.players.add(pl)
+			try:
+				pl = PlayerEntry.objects.get(espnid =centerfield[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(centerfield[11]) + int(centerfield[12]) + int(centerfield[13]) + int(centerfield[14]) + int(centerfield[15])
+				abs += int(centerfield[10])
+				tbs += int(centerfield[15])
+				runs += int(centerfield[12])
+				rbis += int(centerfield[13])
+				bbs += int(centerfield[11])
+				sbs += int(centerfield[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=centerfield[5],gamenumber=int(day),pos="C",bbcid=centerfield[6],doubleheader=centerfield[16],nogame=centerfield[18],abs=centerfield[10],runs=centerfield[12],tbs=centerfield[15],rbis=centerfield[13],bbs=centerfield[11],sbs=centerfield[14],pts=pts,salary=centerfield[8],teamid=centerfield[7],teamname=teams.team[int(centerfield[7])],name = centerfield[3] + " " + centerfield[4])
+
+				pl.save()
+			ent.players.add(pl)	
+			try:
+				pl = PlayerEntry.objects.get(espnid =rightfield[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(rightfield[11]) + int(rightfield[12]) + int(rightfield[13]) + int(rightfield[14]) + int(rightfield[15])
+				abs += int(rightfield[10])
+				tbs += int(rightfield[15])
+				runs += int(rightfield[12])
+				rbis += int(rightfield[13])
+				bbs += int(rightfield[11])
+				sbs += int(rightfield[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=rightfield[5],gamenumber=int(day),pos="C",bbcid=rightfield[6],doubleheader=rightfield[16],nogame=rightfield[18],abs=rightfield[10],runs=rightfield[12],tbs=rightfield[15],rbis=rightfield[13],bbs=rightfield[11],sbs=rightfield[14],pts=pts,salary=rightfield[8],teamid=rightfield[7],teamname=teams.team[int(rightfield[7])],name = rightfield[3] + " " + rightfield[4])
+
+				pl.save()
+			ent.players.add(pl)
+			try:
+				pl = PlayerEntry.objects.get(espnid =dh[5],gamenumber=int(day))
+				tpts += pl.pts
+			except ObjectDoesNotExist:
+				pts = int(dh[11]) + int(dh[12]) + int(dh[13]) + int(dh[14]) + int(dh[15])
+				abs += int(dh[10])
+				tbs += int(dh[15])
+				runs += int(dh[12])
+				rbis += int(dh[13])
+				bbs += int(dh[11])
+				sbs += int(dh[14])
+				tpts += pts
+				pl = PlayerEntry(espnid=dh[5],gamenumber=int(day),pos="C",bbcid=dh[6],doubleheader=dh[16],nogame=dh[18],abs=dh[10],runs=dh[12],tbs=dh[15],rbis=dh[13],bbs=dh[11],sbs=dh[14],pts=pts,salary=dh[8],teamid=dh[7],teamname=teams.team[int(dh[7])],name = dh[3] + " " + dh[4])
+
+				pl.save()
+			
+			ent.players.add(pl)
+			
+			
+			try:
+				pi = PitcherEntry.objects.get(teamid=ps[11],gamenumber=int(day))
+				tpts += pi.pts
+			except ObjectDoesNotExist:
+				ipfrac = int(round((float(ps[14])-round(float(ps[14])))*10,0))
+				ip = round(float(ps[14]))*3+ipfrac
+				ips += addIP(ip,ips)
+				phits += int(ps[15])
+				pbbs += int(ps[17])
+				ers += int(ps[16])
+				ks += int(ps[18])
+				ws += int(ps[19])
+				
+				name = teams.team[int(ps[11])]
+				pts = ip + int(ps[18]) - int(ps[15]) - (3*int(ps[16])) - int(ps[17]) + (5*(int(ps[19])))
+				tpts += pts
+			#print i
+				pi = PitcherEntry(name = name, ip = ps[14], gamenumber=int(day), espnid = ps[9], espnid2 = ps[10], doubleheader = ps[20], nogame = ps[22], hits = ps[15], ers = ps[16], bbs = ps[17], ks = ps[18], w = ps[19], pts = pts, salary = ps[12], teamid = ps[11], teamname=teams.team[int(ps[11])])
+				pi.save()
+			ent.pitchers.add(pi)
+			
+			
+			
+			ent.abs = abs
+			ent.tbs = tbs
+			ent.runs = runs
+			
+			ent.rbis = rbis
+			ent.bbs = bbs
+			ent.sbs = sbs
+			ent.ips = 0
+			#pi = ent.pitchers.all()
+			#aggp = pi.aggregate(Sum('hits'),Sum('bbs'),Sum('ers'),Sum('ks'),Sum('w'))
+			
+			ent.ips = ips
+			ent.phits = phits
+			ent.pbbs = pbbs
+			ent.ers = ers
+			ent.ks = ks
+			ent.ws = ws
+			if ent.ers > 0:
+				ent.era = float(ent.ers*9)/(float(ipToOuts(ent.ips))/3)
+			else:
+				ent.era = 0
+			if ent.abs > 0:
+				ent.slug = float(ent.tbs) /float(ent.abs)
+				ent.ptsabs = float(ent.tbs+ent.runs+ent.rbis+ent.bbs+ent.sbs)/float(ent.abs)
+			else:
+				ent.slug = 0
+				ent.ptsabs = 0
+			if ent.runs > ent.ers:
+				ent.runwin = 1
+			else:
+				if ent.runs == ent.ers:
+					ent.runtie = 1
+				else:
+					ent.runloss = 1
+			if ent.rbis > ent.ers:
+				ent.rbiwin = 1
+			else:
+				if ent.rbis == ent.ers:
+					ent.rbitie = 1
+				else:
+					ent.rbiloss = 1
+
+			utpts += tpts
+			ent.points = tpts
+			ent.save()
+			
+	for i in range(1,30):
+		totalStatsTeamUpdater(user,i,end)
+	#print "stats done"
+	#print user.name
+	totalStatsUpdater(user,end)
+	user.maxgame = end
+	user.totalpoints = utpts
+	user.save()
+	#pl = PlayerEntry.objects.all()
+	#print pl.count()
+	#pi = PitcherEntry.objects.all()
+	#print pi.count()
+
+
+
 
 def UserData(id):
 	s = "http://games.espn.go.com/baseball-challenge/en/entry?entryID=" + str(id)
@@ -939,8 +1177,8 @@ def parser(id,day):
 		#print day
 	file = "/Users/Jason/bbcdata/entry/" + str(id) + "/" + "spid=" + str(day) + ".html.gz"
 	#print file
-	path = "/Users/Jason/bbcdata/entry/" + str(id) + "/"
-	if not os.path.exists(path): os.makedirs(path)
+	#path = "/Users/Jason/bbcdata/entry/" + str(id) + "/"
+	#if not os.path.exists(path): os.makedirs(path)
 	if not (os.path.isfile(file)):
 		h = httplib2.Http()
 		#print "need to dl " + str(file)
@@ -974,7 +1212,7 @@ def parser(id,day):
 	data = root.cssselect('tbody')
 	pl = data[0].cssselect('tr')	
 	t4 = time.time()
-	print t4 - t3
+	#print t4 - t3
 	player = [{},{},{},{},{},{},{},{},{},{}]
 	stat={5:"AB",6:"R",7:"TB",8:"RBI",9:"BB",10:"SB"}
 	i = 0
