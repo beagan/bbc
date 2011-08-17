@@ -113,7 +113,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-	#'debug_toolbar.middleware.DebugToolbarMiddleware',
+	'debug_toolbar.middleware.DebugToolbarMiddleware',
 	#'profiling.middleware.ProfileMiddleware',
 )
 
@@ -136,7 +136,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
 	'bbc',
-	#'debug_toolbar',
+	'debug_toolbar',
 	#'profiling',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
