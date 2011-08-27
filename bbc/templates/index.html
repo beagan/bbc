@@ -23,7 +23,7 @@ white-space:nowrap;
 
 	body {font-size: 12px; font-family: Verdana , sans-serif, Arial;}
     	a:visited,a:link { font-size:14px; font-variant:small-caps; color: #000080; text-decoration:underline; text-transform:capitalize;}
-    	table { border: 1px solid #aaa; } 
+    	table { border: 0px solid #aaa; } 
     	td { border-width: thin; 
     	border-style: outset; }
 
@@ -33,33 +33,17 @@ white-space:nowrap;
   <body>
 
 
-	<table width="100%" border="0" cellspacing="0" cellpadding="1">
-{% for item in users.object_list  %}
+	{% block js %}
+	    
+	    <script src="http://code.jquery.com/jquery-1.6.2.js" type="text/javascript" charset="utf-8"></script>
+	    <script src="{{ STATIC_URL }}endless.js" type="text/javascript" charset="utf-8"></script>
+	{% endblock %}
 
+	<h2>Entries:</h2>
 
-<tr><td><a href = "./posstats?id={{item.espnid}}">{{item.name}}</td>
-<td>{{item.totalpoints}}</td>
-
-{% endfor %}
-</table>
-
-
-   <div class="pagination">
-<span class="step-links">
-    {% if users.has_previous %}
-        <a href="?page={{ ques.previous_page_number }}{% if tag %}&tag={{tag}}{% endif %}{% if sort %}&sort={{sort}}{% endif %}{% if order %}&order={{order}}{% endif %}">previous</a>
-    {% endif %}
-
-    <span class="current">
-        Page {{ users.number }} of {{ users.paginator.num_pages }}.
-    </span>
-
-    {% if users.has_next %}
-        <a href="?page={{ users.next_page_number }}{% if tag %}&tag={{tag}}{% endif %}{% if sort %}&sort={{sort}}{% endif %}{% if order %}&order={{order}}{% endif %}">next</a>
-    {% endif %}
-</span>
-
-</div>
+	<div class="endless_page_template">
+	    {% include "index_page.html" %}
+	</div>
 
 
 	<form method="POST" action="./userrequest">{% csrf_token %}

@@ -3,6 +3,11 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
+TEMPLATE_CONTEXT_PROCESSORS += (
+     'django.core.context_processors.request',
+)
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -87,6 +92,7 @@ STATICFILES_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
 	'/Users/Jason/bbcdata/headshots',
+	'/Users/Jason/bbcstats/bbc/media',
 )
 
 # List of finder classes that know how to find static files in
@@ -113,7 +119,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-	'debug_toolbar.middleware.DebugToolbarMiddleware',
+	#'debug_toolbar.middleware.DebugToolbarMiddleware',
 	#'profiling.middleware.ProfileMiddleware',
 )
 
@@ -136,7 +142,8 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
 	'bbc',
-	'debug_toolbar',
+	'endless_pagination',
+	#'debug_toolbar',
 	#'profiling',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
@@ -164,6 +171,8 @@ LOGGING = {
         },
     }
 }
+
+
 
 import sys
 sys.path.append("/Users/Jason/Downloads/BeautifulSoup-3.2.0")

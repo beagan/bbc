@@ -82,13 +82,13 @@ class TotalStats(models.Model):
 	era = models.FloatField(null = True, blank = True)
 	points = models.IntegerField(null = True, blank = True)
 	
-	runwin = models.IntegerField(default = 0)
-	runloss = models.IntegerField(default = 0)
-	runtie = models.IntegerField(default = 0)
+	runwin = models.IntegerField(default = 0,null = True, blank = True)
+	runloss = models.IntegerField(default = 0,null = True, blank = True)
+	runtie = models.IntegerField(default = 0,null = True, blank = True)
 	
-	rbiwin = models.IntegerField(default = 0)
-	rbiloss = models.IntegerField(default = 0)
-	rbitie = models.IntegerField(default = 0)
+	rbiwin = models.IntegerField(default = 0,null = True, blank = True)
+	rbiloss = models.IntegerField(default = 0,null = True, blank = True)
+	rbitie = models.IntegerField(default = 0,null = True, blank = True)
 	
 	ptsabs = models.FloatField(null = True, blank = True)
 	
@@ -121,12 +121,12 @@ class TotalTeamStats(models.Model):
 	ptsabs = models.FloatField(null = True, blank = True)
 
 class PitcherEntry(models.Model):
-	pid = models.AutoField(primary_key=True)
+	pid = models.BigIntegerField(primary_key=True)
 	name = models.CharField(max_length=128)
-	gamenumber = models.IntegerField(db_index = True)
+	gamenumber = models.IntegerField()
 	espnid = models.IntegerField()
 	espnid2 = models.IntegerField()
-	teamid = models.IntegerField(db_index = True)
+	teamid = models.IntegerField()
 	teamname = models.CharField(max_length=128)
 	doubleheader = models.BooleanField()
 	nogame = models.BooleanField()
@@ -137,16 +137,16 @@ class PitcherEntry(models.Model):
 	ks = models.IntegerField()
 	w = models.IntegerField()
 	pts = models.IntegerField()
-	salary = models.FloatField()
+
 
 class PlayerEntry(models.Model):
-	pid = models.AutoField(primary_key=True)
+	pid = models.BigIntegerField(primary_key=True)
 	name = models.CharField(max_length=128,null = True, blank = True)
-	gamenumber = models.IntegerField(db_index = True)
+	gamenumber = models.IntegerField()
 	pos = models.CharField(max_length=128,null = True, blank = True)
-	espnid = models.IntegerField(db_index = True)
+	espnid = models.IntegerField()
 	bbcid = models.IntegerField(null = True, blank = True)
-	teamid = models.IntegerField(null = True, blank = True, db_index = True)
+	teamid = models.IntegerField(null = True, blank = True)
 	teamname = models.CharField(max_length=128)
 	doubleheader = models.BooleanField(default = True, blank = True)
 	nogame = models.BooleanField(default = True, blank = True)
@@ -157,16 +157,26 @@ class PlayerEntry(models.Model):
 	bbs = models.IntegerField(null = True, blank = True)
 	sbs = models.IntegerField(null = True, blank = True)
 	pts = models.IntegerField(null = True, blank = True)
-	salary = models.FloatField(null = True, blank = True)
 
 
 class Entry(models.Model):
 	uid = models.ForeignKey(User)
-	eid = models.AutoField(primary_key=True)
-	gamenumber = models.IntegerField(db_index=True)
+	eid = models.BigIntegerField(primary_key=True)
+	gamenumber = models.IntegerField()
 	points = models.IntegerField()
 	players = models.ManyToManyField(PlayerEntry)
 	pitchers = models.ManyToManyField(PitcherEntry)
+	
+	p1salary = models.FloatField(null = True, blank = True)
+	p2salary = models.FloatField(null = True, blank = True)
+	p3salary = models.FloatField(null = True, blank = True)
+	p4salary = models.FloatField(null = True, blank = True)
+	p5salary = models.FloatField(null = True, blank = True)
+	p6salary = models.FloatField(null = True, blank = True)
+	p7salary = models.FloatField(null = True, blank = True)
+	p8salary = models.FloatField(null = True, blank = True)
+	p9salary = models.FloatField(null = True, blank = True)							
+	pssalary = models.FloatField(null = True, blank = True)
 	
 	abs = models.IntegerField(null = True, blank = True)
 	tbs = models.IntegerField(null = True, blank = True)
@@ -184,16 +194,128 @@ class Entry(models.Model):
 	
 	slug = models.FloatField(null = True, blank = True)
 	era = models.FloatField(null = True, blank = True)
+	whip = models.FloatField(null = True, blank = True)
 	
-	runwin = models.IntegerField(default = 0,null=False)
-	runloss = models.IntegerField(default = 0,null=False)
-	runtie = models.IntegerField(default = 0,null=False)
+	runwin = models.IntegerField(default = 0,null = True, blank = True)
+	runloss = models.IntegerField(default = 0,null = True, blank = True)
+	runtie = models.IntegerField(default = 0,null = True, blank = True)
 	
-	rbiwin = models.IntegerField(default = 0,null=False)
-	rbiloss = models.IntegerField(default = 0,null=False)
-	rbitie = models.IntegerField(default = 0,null=False)
+	rbiwin = models.IntegerField(default = 0,null = True, blank = True)
+	rbiloss = models.IntegerField(default = 0,null = True, blank = True)
+	rbitie = models.IntegerField(default = 0,null = True, blank = True)
 	
 	ptsabs = models.FloatField(null = True, blank = True)
+
+
+class PositionPlayerStats(models.Model):
+	uid = models.ForeignKey(User)
+	pid = models.AutoField(primary_key =True)
+	
+	pos = models.IntegerField()
+	posstr = models.CharField(max_length=3)
+	posfullstr = models.CharField(max_length=128)
+	
+	abs = models.IntegerField(null = True, blank = True)
+	tbs = models.IntegerField(null = True, blank = True)
+	rbis = models.IntegerField(null = True, blank = True)
+	bbs = models.IntegerField(null = True, blank = True)
+	sbs = models.IntegerField(null = True, blank = True)
+	runs = models.IntegerField(null = True, blank = True)
+	
+	slug = models.FloatField(null = True, blank = True)
+	ptsabs = models.FloatField(null = True, blank = True)
+	
+#	players = models.ManyToManyField(PlayerStatEntry)
+	maxgame = models.IntegerField(null = True, blank = True)
+
+	
+
+class PositionPitcherStats(models.Model):
+	uid = models.ForeignKey(User)
+	pid = models.AutoField(primary_key =True)
+	
+	ips = models.FloatField(null = True, blank = True)
+	phits = models.IntegerField(null = True, blank = True)
+	pbbs = models.IntegerField(null = True, blank = True)
+	ers = models.IntegerField(null = True, blank = True)
+	ks = models.IntegerField(null = True, blank = True)
+	ws = models.IntegerField(null = True, blank = True)
+	
+	era = models.FloatField(null = True, blank = True)
+	whip = models.FloatField(null = True, blank = True)
+	
+	#pitchers = models.ManyToManyField(PitcherStat)
+	maxgame = models.IntegerField(null = True, blank = True)
+
+
+
+class PlayerStat(models.Model):
+	uid = models.ForeignKey(User)
+	pid = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=128,null = True, blank = True)
+	#include array,manytomany?gamenumbers
+	pos = models.IntegerField(null = True, blank = True, db_index = True)
+	posstr = models.CharField(max_length=128,null = True, blank = True)
+	espnid = models.IntegerField()
+	bbcid = models.IntegerField(null = True, blank = True)
+	teamid = models.IntegerField(null = True, blank = True)
+	teamname = models.CharField(null = True, blank = True, max_length=128)
+	
+	abs = models.IntegerField(null = True, blank = True)
+	tbs = models.IntegerField(null = True, blank = True)
+	rbis = models.IntegerField(null = True, blank = True)
+	bbs = models.IntegerField(null = True, blank = True)
+	sbs = models.IntegerField(null = True, blank = True)
+	runs = models.IntegerField(null = True, blank = True)
+	
+	slug = models.FloatField(null = True, blank = True)
+	ptsabs = models.FloatField(null = True, blank = True)
+	
+	maxgame = models.IntegerField(null = True, blank = True)
+
+
+class PitcherStat(models.Model):
+	uid = models.ForeignKey(User)
+	pid = models.AutoField(primary_key =True)
+	
+	teamid = models.IntegerField(null = True, blank = True)
+	teamname = models.CharField(null = True, blank = True, max_length=128)
+	
+	espnid = models.IntegerField(null = True, blank = True)
+	name = models.IntegerField(null = True, blank = True)
+	
+	ips = models.FloatField(null = True, blank = True)
+	phits = models.IntegerField(null = True, blank = True)
+	pbbs = models.IntegerField(null = True, blank = True)
+	ers = models.IntegerField(null = True, blank = True)
+	ks = models.IntegerField(null = True, blank = True)
+	ws = models.IntegerField(null = True, blank = True)
+	
+	era = models.FloatField(null = True, blank = True)
+	whip = models.FloatField(null = True, blank = True)
+	
+	maxgame = models.IntegerField(null = True, blank = True)
+
+
+class TeamPitcherStat(models.Model):
+	uid = models.ForeignKey(User)
+	pid = models.AutoField(primary_key =True)
+
+	teamid = models.IntegerField(null = True, blank = True)
+	teamname = models.CharField(null = True, blank = True, max_length=128)
+
+	ips = models.FloatField(null = True, blank = True)
+	phits = models.IntegerField(null = True, blank = True)
+	pbbs = models.IntegerField(null = True, blank = True)
+	ers = models.IntegerField(null = True, blank = True)
+	ks = models.IntegerField(null = True, blank = True)
+	ws = models.IntegerField(null = True, blank = True)
+
+	era = models.FloatField(null = True, blank = True)
+	whip = models.FloatField(null = True, blank = True)
+
+	maxgame = models.IntegerField(null = True, blank = True)
+
 
 class Lineup(models.Model):
 	pid = models.AutoField(primary_key=True)

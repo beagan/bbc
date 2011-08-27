@@ -1,0 +1,15 @@
+{% load endless %}
+
+{%  paginate 25 objects using 'index_page' %}
+
+<table width="100%" border="0" cellspacing="0" cellpadding="1">
+{% for item in objects %}
+
+<tr><td><a href = "./posstats?id={{item.espnid}}">{{item.name}}</td>
+<td>{{item.totalpoints}}</td></tr>
+
+{% endfor %}
+
+</table>
+
+{% show_pages %}

@@ -73,147 +73,275 @@
 
 	</thead>
 	<tbody>
-
+{{totals.c}}
 		<tr class="parent" id="rowC">
-			{% for t in totals.C %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+			<td>{{totals.C.posfullstr}}</td>
+			<td>{{totals.C.posstr}}</td>
+			<td>{{totals.C.espnid}}</td>
+			<td>{{totals.C.abs}}</td>
+			<td>{{totals.C.tbs}}</td>
+			<td>{{totals.C.rbis}}</td>
+			<td>{{totals.C.bbs}}</td>
+			<td>{{totals.C.sbs}}</td>
+			<td>{{totals.C.runs}}</td>
+			<td>{{totals.C.slug}}</td>
+			<td>{{totals.C.ptsabs}}</td>
+
 		</tr>
 		{% for i in C %}
 		<tr class="child-rowC" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+				<td>{{i.name}}</td>
+				<td>{{i.posstr}}</td>
+				<td>{{i.espnid}}</td>
+				<td>{{i.teamname}}</td>
+				<td>{{i.abs}}</td>
+				<td>{{i.tbs}}</td>
+				<td>{{i.rbis}}</td>
+				<td>{{i.bbs}}</td>
+				<td>{{i.sbs}}</td>
+				<td>{{i.runs}}</td>
+				<td>{{i.slug}}</td>
+				<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 		<tr class="parent" id="row1B" >
-			{% for t in totals.1B %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+
+			<td>{{totals.1B.posfullstr}}</td>
+			<td>{{totals.1B.posstr}}</td>
+			<td>{{totals.1B.espnid}}</td>
+			<td>{{totals.1B.abs}}</td>
+			<td>{{totals.1B.tbs}}</td>
+			<td>{{totals.1B.rbis}}</td>
+			<td>{{totals.1B.bbs}}</td>
+			<td>{{totals.1B.sbs}}</td>
+			<td>{{totals.1B.runs}}</td>
+			<td>{{totals.1B.slug}}</td>
+			<td>{{totals.1B.ptsabs}}</td>
 		</tr>
 		{% for i in 1B %}
 		<tr class="child-row1B" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+			<td>{{i.name}}</td>
+			<td>{{i.posstr}}</td>
+			<td>{{i.espnid}}</td>
+			<td>{{i.teamname}}</td>
+			<td>{{i.abs}}</td>
+			<td>{{i.tbs}}</td>
+			<td>{{i.rbis}}</td>
+			<td>{{i.bbs}}</td>
+			<td>{{i.sbs}}</td>
+			<td>{{i.runs}}</td>
+			<td>{{i.slug}}</td>
+			<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 	
 		<tr class="parent" id="row2B">
-			{% for t in totals.2B %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+			<td>{{totals.2B.posfullstr}}</td>
+			<td>{{totals.2B.posstr}}</td>
+			<td>{{totals.2B.espnid}}</td>
+			<td>{{totals.2B.abs}}</td>
+			<td>{{totals.2B.tbs}}</td>
+			<td>{{totals.2B.rbis}}</td>
+			<td>{{totals.2B.bbs}}</td>
+			<td>{{totals.2B.sbs}}</td>
+			<td>{{totals.2B.runs}}</td>
+			<td>{{totals.2B.slug}}</td>
+			<td>{{totals.2B.ptsabs}}</td>
 		</tr>
 		{% for i in 2B %}
 		<tr class="child-row2B" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+			<td>{{i.name}}</td>
+			<td>{{i.posstr}}</td>
+			<td>{{i.espnid}}</td>
+			<td>{{i.teamname}}</td>
+			<td>{{i.abs}}</td>
+			<td>{{i.tbs}}</td>
+			<td>{{i.rbis}}</td>
+			<td>{{i.bbs}}</td>
+			<td>{{i.sbs}}</td>
+			<td>{{i.runs}}</td>
+			<td>{{i.slug}}</td>
+			<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 	
 		<tr class="parent" id="row3B">
-			{% for t in totals.3B %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+			<td>{{totals.3B.posfullstr}}</td>
+			<td>{{totals.3B.posstr}}</td>
+			<td>{{totals.3B.espnid}}</td>
+			<td>{{totals.3B.abs}}</td>
+			<td>{{totals.3B.tbs}}</td>
+			<td>{{totals.3B.rbis}}</td>
+			<td>{{totals.3B.bbs}}</td>
+			<td>{{totals.3B.sbs}}</td>
+			<td>{{totals.3B.runs}}</td>
+			<td>{{totals.3B.slug}}</td>
+			<td>{{totals.3B.ptsabs}}</td>
 		</tr>
 		{% for i in 3B %}
 		<tr class="child-row3B" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+			<td>{{i.name}}</td>
+			<td>{{i.posstr}}</td>
+			<td>{{i.espnid}}</td>
+			<td>{{i.teamname}}</td>
+			<td>{{i.abs}}</td>
+			<td>{{i.tbs}}</td>
+			<td>{{i.rbis}}</td>
+			<td>{{i.bbs}}</td>
+			<td>{{i.sbs}}</td>
+			<td>{{i.runs}}</td>
+			<td>{{i.slug}}</td>
+			<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 	
 		<tr class="parent" id="rowSS">
-			{% for t in totals.SS %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+			<td>{{totals.SS.posfullstr}}</td>
+			<td>{{totals.SS.posstr}}</td>
+			<td>{{totals.SS.espnid}}</td>
+			<td>{{totals.SS.abs}}</td>
+			<td>{{totals.SS.tbs}}</td>
+			<td>{{totals.SS.rbis}}</td>
+			<td>{{totals.SS.bbs}}</td>
+			<td>{{totals.SS.sbs}}</td>
+			<td>{{totals.SS.runs}}</td>
+			<td>{{totals.SS.slug}}</td>
+			<td>{{totals.SS.ptsabs}}</td>
 		</tr>
 		{% for i in SS %}
 		<tr class="child-rowSS" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+			<td>{{i.name}}</td>
+			<td>{{i.posstr}}</td>
+			<td>{{i.espnid}}</td>
+			<td>{{i.teamname}}</td>
+			<td>{{i.abs}}</td>
+			<td>{{i.tbs}}</td>
+			<td>{{i.rbis}}</td>
+			<td>{{i.bbs}}</td>
+			<td>{{i.sbs}}</td>
+			<td>{{i.runs}}</td>
+			<td>{{i.slug}}</td>
+			<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 	
 		<tr class="parent" id="rowLF">
-			{% for t in totals.LF %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+			<td>{{totals.LF.posfullstr}}</td>
+			<td>{{totals.LF.posstr}}</td>
+			<td>{{totals.LF.espnid}}</td>
+			<td>{{totals.LF.abs}}</td>
+			<td>{{totals.LF.tbs}}</td>
+			<td>{{totals.LF.rbis}}</td>
+			<td>{{totals.LF.bbs}}</td>
+			<td>{{totals.LF.sbs}}</td>
+			<td>{{totals.LF.runs}}</td>
+			<td>{{totals.LF.slug}}</td>
+			<td>{{totals.LF.ptsabs}}</td>
 		</tr>
 		{% for i in LF %}
 		<tr class="child-rowLF" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+			<td>{{i.name}}</td>
+			<td>{{i.posstr}}</td>
+			<td>{{i.espnid}}</td>
+			<td>{{i.teamname}}</td>
+			<td>{{i.abs}}</td>
+			<td>{{i.tbs}}</td>
+			<td>{{i.rbis}}</td>
+			<td>{{i.bbs}}</td>
+			<td>{{i.sbs}}</td>
+			<td>{{i.runs}}</td>
+			<td>{{i.slug}}</td>
+			<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 	
 		<tr class="parent" id="rowCF">
-			{% for t in totals.CF %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+			<td>{{totals.CF.posfullstr}}</td>
+			<td>{{totals.CF.posstr}}</td>
+			<td>{{totals.CF.espnid}}</td>
+			<td>{{totals.CF.abs}}</td>
+			<td>{{totals.CF.tbs}}</td>
+			<td>{{totals.CF.rbis}}</td>
+			<td>{{totals.CF.bbs}}</td>
+			<td>{{totals.CF.sbs}}</td>
+			<td>{{totals.CF.runs}}</td>
+			<td>{{totals.CF.slug}}</td>
+			<td>{{totals.CF.ptsabs}}</td>
 		</tr>
-		{% for i in 1B %}
+		{% for i in CF %}
 		<tr class="child-rowCF" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+			<td>{{i.name}}</td>
+			<td>{{i.posstr}}</td>
+			<td>{{i.espnid}}</td>
+			<td>{{i.teamname}}</td>
+			<td>{{i.abs}}</td>
+			<td>{{i.tbs}}</td>
+			<td>{{i.rbis}}</td>
+			<td>{{i.bbs}}</td>
+			<td>{{i.sbs}}</td>
+			<td>{{i.runs}}</td>
+			<td>{{i.slug}}</td>
+			<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 	
 		<tr class="parent" id="rowRF">
-			{% for t in totals.RF %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+			<td>{{totals.RF.posfullstr}}</td>
+			<td>{{totals.RF.posstr}}</td>
+			<td>{{totals.RF.espnid}}</td>
+			<td>{{totals.RF.abs}}</td>
+			<td>{{totals.RF.tbs}}</td>
+			<td>{{totals.RF.rbis}}</td>
+			<td>{{totals.RF.bbs}}</td>
+			<td>{{totals.RF.sbs}}</td>
+			<td>{{totals.RF.runs}}</td>
+			<td>{{totals.RF.slug}}</td>
+			<td>{{totals.RF.ptsabs}}</td>
 		</tr>
 		{% for i in RF %}
 		<tr class="child-rowRF" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+			<td>{{i.name}}</td>
+			<td>{{i.posstr}}</td>
+			<td>{{i.espnid}}</td>
+			<td>{{i.teamname}}</td>
+			<td>{{i.abs}}</td>
+			<td>{{i.tbs}}</td>
+			<td>{{i.rbis}}</td>
+			<td>{{i.bbs}}</td>
+			<td>{{i.sbs}}</td>
+			<td>{{i.runs}}</td>
+			<td>{{i.slug}}</td>
+			<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 	
 		<tr class="parent" id="rowDH">
-			{% for t in totals.DH %}
-				{% for tt in t %}
-					<td>{{tt}}</td>
-				{% endfor %}
-			{% endfor %}
+			<td>{{totals.DH.posfullstr}}</td>
+			<td>{{totals.DH.posstr}}</td>
+			<td>{{totals.DH.espnid}}</td>
+			<td>{{totals.DH.abs}}</td>
+			<td>{{totals.DH.tbs}}</td>
+			<td>{{totals.DH.rbis}}</td>
+			<td>{{totals.DH.bbs}}</td>
+			<td>{{totals.DH.sbs}}</td>
+			<td>{{totals.DH.runs}}</td>
+			<td>{{totals.DH.slug}}</td>
+			<td>{{totals.DH.ptsabs}}</td>
 		</tr>
 		{% for i in DH %}
 		<tr class="child-rowDH" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
-
-			{% endfor %}
+			<td>{{i.name}}</td>
+			<td>{{i.posstr}}</td>
+			<td>{{i.espnid}}</td>
+			<td>{{i.teamname}}</td>
+			<td>{{i.abs}}</td>
+			<td>{{i.tbs}}</td>
+			<td>{{i.rbis}}</td>
+			<td>{{i.bbs}}</td>
+			<td>{{i.sbs}}</td>
+			<td>{{i.runs}}</td>
+			<td>{{i.slug}}</td>
+			<td>{{i.ptsabs}}</td>
 		</tr>
 	{% endfor %}
 	</tbody>
@@ -240,14 +368,11 @@
 	<thead>
 		<tr>
 			<th>Team</th>
-			<th>pos</th>
-			<th>espnid</th>
-			<th>abs</th>
-			<th>runs</th>
-			<th>tbs</th>
-			<th>rbis</th>
-			<th>bbs</th>
-			<th>sbs</th>
+			<th>ips</th>
+			<th>hits</th>
+			<th>pbbs</th>
+			<th>ers</th>
+			<th>ks</th>
 			<th>PTS</th>
 		</tr>
 
@@ -259,12 +384,16 @@
 				
 
 		</tr>
-		{% for i in P %}
+		{% for i in pitchers %}
 		<tr class="child-rowC" style="display:none">
-			{% for  s in i %}
-				<td>{{s}}</td>
+			<td>{{i.teamname}}
+			<td>{{i.ips}}</td>
+			<td>{{i.phits}}</td>
+			<td>{{i.pbbs}}</td>
+			<td>{{i.ers}}</td>
+			<td>{{i.ks}}</td>
+			<td>{{i.pts}}</td>
 
-			{% endfor %}
 		</tr>
 	{% endfor %}
 
