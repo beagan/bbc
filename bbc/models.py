@@ -1,7 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
 class User (models.Model):
 	uid = models.AutoField(primary_key=True)
 	name  = models.CharField(max_length=128)
@@ -9,12 +7,13 @@ class User (models.Model):
 	totalpoints = models.IntegerField(null = True, blank = True)
 	maxgame = models.IntegerField(null = True)
 
+
 class UserRank(models.Model):
 	uid = models.ForeignKey(User)
 	date = models.DateField()
 	rank = models.CharField(max_length=30)
 	pct = models.CharField(max_length=30)
-	
+
 
 class UserTransactionLog(models.Model):
 	uid = models.ForeignKey(User)
@@ -24,11 +23,12 @@ class UserTransactionLog(models.Model):
 	addedat = models.FloatField()
 	gamenumber = models.IntegerField()
 
+
 class UserStats(models.Model):
 	uid = models.ForeignKey(User)
 	usid = models.AutoField(primary_key=True)
 	game = models.IntegerField()
-
+	
 	abs = models.IntegerField(null = True, blank = True)
 	tbs = models.IntegerField(null = True, blank = True)
 	rbis = models.IntegerField(null = True, blank = True)
@@ -54,10 +54,8 @@ class UserStats(models.Model):
 	rbiloss = models.IntegerField(default = 0)
 	rbitie = models.IntegerField(default = 0)
 	
-	ptsabs = models.FloatField(null = True, blank = True)
-	
+	ptsabs = models.FloatField(null = True, blank = True)	
 
-	
 
 class TotalStats(models.Model):
 	uid = models.ForeignKey(User)
@@ -79,7 +77,13 @@ class TotalStats(models.Model):
 	ers = models.IntegerField(null = True, blank = True)
 	ks = models.IntegerField(null = True, blank = True)
 	ws = models.IntegerField(null = True, blank = True)
+	
 	era = models.FloatField(null = True, blank = True)
+	whip = models.FloatField(null = True, blank = True)
+	
+	playpoints = models.IntegerField(null = True, blank = True)
+	pitchpoints = models.IntegerField(null = True, blank = True)
+	
 	points = models.IntegerField(null = True, blank = True)
 	
 	runwin = models.IntegerField(default = 0,null = True, blank = True)
@@ -91,7 +95,8 @@ class TotalStats(models.Model):
 	rbitie = models.IntegerField(default = 0,null = True, blank = True)
 	
 	ptsabs = models.FloatField(null = True, blank = True)
-	
+
+
 class TotalTeamStats(models.Model):
 	uid = models.ForeignKey(User)
 	tid = models.AutoField(primary_key=True)
@@ -108,17 +113,27 @@ class TotalTeamStats(models.Model):
 	sbs = models.IntegerField(null = True, blank = True)
 	slug = models.FloatField(null = True, blank = True)
 	runs = models.IntegerField(null = True, blank = True)
-
+	
 	ips = models.FloatField(null = True, blank = True)
 	phits = models.IntegerField(null = True, blank = True)
 	pbbs = models.IntegerField(null = True, blank = True)
 	ers = models.IntegerField(null = True, blank = True)
 	ks = models.IntegerField(null = True, blank = True)
 	ws = models.IntegerField(null = True, blank = True)
+	
 	era = models.FloatField(null = True, blank = True)
+	whip = models.FloatField(null = True, blank = True)
+	
+	playpoints = models.IntegerField(null = True, blank = True)
+	pitchpoints = models.IntegerField(null = True, blank = True)
+	
 	points = models.IntegerField(null = True, blank = True)
-
+	
+	playspresent = models.BooleanField(null = False, blank = False)
+	pitspresent = models.BooleanField(null = False, blank = False)
+	
 	ptsabs = models.FloatField(null = True, blank = True)
+
 
 class PitcherEntry(models.Model):
 	pid = models.BigIntegerField(primary_key=True)
@@ -225,10 +240,11 @@ class PositionPlayerStats(models.Model):
 	slug = models.FloatField(null = True, blank = True)
 	ptsabs = models.FloatField(null = True, blank = True)
 	
+	pts = models.IntegerField(null = True, blank = True)
+	
 #	players = models.ManyToManyField(PlayerStatEntry)
 	maxgame = models.IntegerField(null = True, blank = True)
 
-	
 
 class PositionPitcherStats(models.Model):
 	uid = models.ForeignKey(User)
@@ -246,7 +262,6 @@ class PositionPitcherStats(models.Model):
 	
 	#pitchers = models.ManyToManyField(PitcherStat)
 	maxgame = models.IntegerField(null = True, blank = True)
-
 
 
 class PlayerStat(models.Model):
@@ -272,6 +287,8 @@ class PlayerStat(models.Model):
 	ptsabs = models.FloatField(null = True, blank = True)
 	
 	maxgame = models.IntegerField(null = True, blank = True)
+	
+	pts = models.IntegerField(null = True, blank = True)
 
 
 class PitcherStat(models.Model):
@@ -300,20 +317,20 @@ class PitcherStat(models.Model):
 class TeamPitcherStat(models.Model):
 	uid = models.ForeignKey(User)
 	pid = models.AutoField(primary_key =True)
-
+	
 	teamid = models.IntegerField(null = True, blank = True)
 	teamname = models.CharField(null = True, blank = True, max_length=128)
-
+	
 	ips = models.FloatField(null = True, blank = True)
 	phits = models.IntegerField(null = True, blank = True)
 	pbbs = models.IntegerField(null = True, blank = True)
 	ers = models.IntegerField(null = True, blank = True)
 	ks = models.IntegerField(null = True, blank = True)
 	ws = models.IntegerField(null = True, blank = True)
-
+	
 	era = models.FloatField(null = True, blank = True)
 	whip = models.FloatField(null = True, blank = True)
-
+	
 	maxgame = models.IntegerField(null = True, blank = True)
 
 
@@ -340,9 +357,9 @@ class Lineup(models.Model):
 	dhname = models.CharField(max_length=128,null = True, blank = True)
 	ps = models.CharField(max_length=128,null = True, blank = True)
 	psname = models.CharField(max_length=128,null = True, blank = True)
+
 	
 class Top100Lineup(models.Model):
 	id = models.AutoField(primary_key=True)
 	top100 = models.ManyToManyField(Lineup)
 	date = models.DateField()
-

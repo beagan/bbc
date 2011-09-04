@@ -4,402 +4,548 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>Question Answers</title>
 
-	    <style type="text/css">
-	        H1 {font-size: 20px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
-	        H2 {font-size: 18px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
-	        H3 {font-size: 16px; font-variant:small-caps;font-family: Helvetica, Verdana, Arial, sans-serif;background:#c0c0c0; border: 1px solid #aaa;
-	        text-align: left;
-	        .post-tag {
-	background-color:#E0EAF1;
-	border-bottom:1px solid #3E6D8E;
-	border-right:1px solid #7F9FB6;
-	color:#3E6D8E;
-	font-size:90%;
-	line-height:2.4;
-	margin:2px 2px 2px 0;
-	padding:3px 4px;
-	text-decoration:none;
-	white-space:nowrap;
-	}}
-
-	    body {font-size: 12px; font-family: Verdana , sans-serif, Arial;}
-	        a:visited,a:link { font-size:14px; font-variant:small-caps; color: #000080; text-decoration:underline; text-transform:capitalize;}
-	        table { border: 1px solid #aaa; } 
-	        td { border-width: thin; 
-	        border-style: outset; }
 
 
-	    </style>
 
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.js"></script>
-	<link href="styles.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="static/jquery.js"></script>
+
 	
-	<script>
-	
-	$(document).ready(function () {
-		$('tr.parent')
-			.css("cursor","pointer")
-			.attr("title","Click to expand/collapse")
-			.click(function(){
-				$(this).siblings('.child-'+this.id).toggle();
+	<script type="text/javascript" src="/static/jquery.tablesorter.js"></script> 				
+	<script type="text/javascript" src="/static/jquery.flot.js"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+	 		$('tr.parent').click(function(){
+					$(this).siblings('.child-'+this.id).toggle();
 			});
-		$('tr[@class^=child-]').hide().children('td');
-	});
-	
-		
+			$('tr.child').hide().children('td');
+			$("tr").hover(function(){
+		    	$(this).css("background-color","#B01514");
+				$(this).css("color","white");
+				},function(){
+				  $(this).css("background-color","white");
+								$(this).css("color","black");
+		  	});
+
+			
+			
+		});
 	</script>
-	
+
 </head>
 <body>
-	<table id="detail_table" class="detail">
-		<col style="width:80px;">
-		<col style="width:20px;">
+	
+    <div class="container-fluid">
+    <div class="sidebar">
+		<a href="./">Home</a>
+    </div>
+    <div class="content">
 
-		<col style="width:40px;">
-		<col style="width:40px;">
-	<thead>
-		<tr>
-			<th>Name</th>
-			<th>pos</th>
-			<th>espnid</th>
-			<th>abs</th>
-			<th>runs</th>
-			<th>tbs</th>
-			<th>rbis</th>
-			<th>bbs</th>
-			<th>sbs</th>
-			<th>PTS</th>
-		</tr>
+		<table id="stats" class="">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>POS</th>
+					<th>ESPNid</th>
+					<th>ABs</th>
+					<th>TBS</th>
+					<th>RBIs</th>
+					<th>BBs</th>
+					<th>SBs</th>
+					<th>RUNs</th>
+					<th>SLUG</th>
+					<th>PTs/ABs</th>
+					<th>PTS</th>
+				</tr>
 
-	</thead>
-	<tbody>
-{{totals.c}}
-		<tr class="parent" id="rowC">
-			<td>{{totals.C.posfullstr}}</td>
-			<td>{{totals.C.posstr}}</td>
-			<td>{{totals.C.espnid}}</td>
-			<td>{{totals.C.abs}}</td>
-			<td>{{totals.C.tbs}}</td>
-			<td>{{totals.C.rbis}}</td>
-			<td>{{totals.C.bbs}}</td>
-			<td>{{totals.C.sbs}}</td>
-			<td>{{totals.C.runs}}</td>
-			<td>{{totals.C.slug}}</td>
-			<td>{{totals.C.ptsabs}}</td>
+			</thead>
+		<tbody>
+			<tr class="parent" id="rowC">
+				<td>{{totals.C.posfullstr}}</td>
+				<td>{{totals.C.posstr}}</td>
+				<td>{{totals.C.espnid}}</td>
+				<td>{{totals.C.abs}}</td>
+				<td>{{totals.C.tbs}}</td>
+				<td>{{totals.C.rbis}}</td>
+				<td>{{totals.C.bbs}}</td>
+				<td>{{totals.C.sbs}}</td>
+				<td>{{totals.C.runs}}</td>
+				<td>{{totals.C.slug|floatformat:3}}</td>
+				<td>{{totals.C.ptsabs|floatformat:3}}</td>
+				<td>{{totals.C.pts}}</td>
 
-		</tr>
-		{% for i in C %}
-		<tr class="child-rowC" style="display:none">
+			</tr>
+			{% for i in C %}
+			<tr class="child-rowC" style="display:none">
+					<td>{{i.name}}</td>
+					<td>{{i.posstr}}</td>
+					<td><img src="{{ STATIC_URL }}{{i.espnid}}.jpg" width = 35 length = 48 title = "{{i.name}}"/></td>
+					<td>{{i.abs}}</td>
+					<td>{{i.tbs}}</td>
+					<td>{{i.rbis}}</td>
+					<td>{{i.bbs}}</td>
+					<td>{{i.sbs}}</td>
+					<td>{{i.runs}}</td>
+					<td>{{i.slug|floatformat:3}}</td>
+					<td>{{i.ptsabs|floatformat:3}}</td>
+					<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
+			<tr class="parent" id="row1B" >
+
+				<td>{{totals.1B.posfullstr}}</td>
+				<td>{{totals.1B.posstr}}</td>
+				<td>{{totals.1B.espnid}}</td>
+				<td>{{totals.1B.abs}}</td>
+				<td>{{totals.1B.tbs}}</td>
+				<td>{{totals.1B.rbis}}</td>
+				<td>{{totals.1B.bbs}}</td>
+				<td>{{totals.1B.sbs}}</td>
+				<td>{{totals.1B.runs}}</td>
+				<td>{{totals.1B.slug|floatformat:3}}</td>
+				<td>{{totals.1B.ptsabs|floatformat:3}}</td>
+				<td>{{totals.1B.pts}}</td>
+			</tr>
+			{% for i in 1B %}
+			<tr class="child-row1B" style="display:none">
 				<td>{{i.name}}</td>
 				<td>{{i.posstr}}</td>
 				<td>{{i.espnid}}</td>
-				<td>{{i.teamname}}</td>
 				<td>{{i.abs}}</td>
 				<td>{{i.tbs}}</td>
 				<td>{{i.rbis}}</td>
 				<td>{{i.bbs}}</td>
 				<td>{{i.sbs}}</td>
 				<td>{{i.runs}}</td>
-				<td>{{i.slug}}</td>
-				<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-		<tr class="parent" id="row1B" >
+				<td>{{i.slug|floatformat:3}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
 
-			<td>{{totals.1B.posfullstr}}</td>
-			<td>{{totals.1B.posstr}}</td>
-			<td>{{totals.1B.espnid}}</td>
-			<td>{{totals.1B.abs}}</td>
-			<td>{{totals.1B.tbs}}</td>
-			<td>{{totals.1B.rbis}}</td>
-			<td>{{totals.1B.bbs}}</td>
-			<td>{{totals.1B.sbs}}</td>
-			<td>{{totals.1B.runs}}</td>
-			<td>{{totals.1B.slug}}</td>
-			<td>{{totals.1B.ptsabs}}</td>
+			<tr class="parent" id="row2B">
+				<td>{{totals.2B.posfullstr}}</td>
+				<td>{{totals.2B.posstr}}</td>
+				<td>{{totals.2B.espnid}}</td>
+				<td>{{totals.2B.abs}}</td>
+				<td>{{totals.2B.tbs}}</td>
+				<td>{{totals.2B.rbis}}</td>
+				<td>{{totals.2B.bbs}}</td>
+				<td>{{totals.2B.sbs}}</td>
+				<td>{{totals.2B.runs}}</td>
+				<td>{{totals.2B.slug|floatformat:3}}</td>
+				<td>{{totals.2B.ptsabs|floatformat:3}}</td>
+				<td>{{totals.2B.pts}}</td>
+			</tr>
+			{% for i in 2B %}
+			<tr class="child-row2B" style="display:none">
+				<td>{{i.name}}</td>
+				<td>{{i.posstr}}</td>
+				<td>{{i.espnid}}</td>
+				<td>{{i.abs}}</td>
+				<td>{{i.tbs}}</td>
+				<td>{{i.rbis}}</td>
+				<td>{{i.bbs}}</td>
+				<td>{{i.sbs}}</td>
+				<td>{{i.runs}}</td>
+				<td>{{i.slug|floatformat:3}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
+
+			<tr class="parent" id="row3B">
+				<td>{{totals.3B.posfullstr}}</td>
+				<td>{{totals.3B.posstr}}</td>
+				<td>{{totals.3B.espnid}}</td>
+				<td>{{totals.3B.abs}}</td>
+				<td>{{totals.3B.tbs}}</td>
+				<td>{{totals.3B.rbis}}</td>
+				<td>{{totals.3B.bbs}}</td>
+				<td>{{totals.3B.sbs}}</td>
+				<td>{{totals.3B.runs}}</td>
+				<td>{{totals.3B.slug|floatformat:3}}</td>
+				<td>{{totals.3B.ptsabs|floatformat:3}}</td>
+				<td>{{totals.3B.pts}}</td>
+			</tr>
+			{% for i in 3B %}
+			<tr class="child-row3B" style="display:none">
+				<td>{{i.name}}</td>
+				<td>{{i.posstr}}</td>
+				<td>{{i.espnid}}</td>
+				<td>{{i.abs}}</td>
+				<td>{{i.tbs}}</td>
+				<td>{{i.rbis}}</td>
+				<td>{{i.bbs}}</td>
+				<td>{{i.sbs}}</td>
+				<td>{{i.runs}}</td>
+				<td>{{i.slug|floatformat:3}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
+
+			<tr class="parent" id="rowSS">
+				<td>{{totals.SS.posfullstr}}</td>
+				<td>{{totals.SS.posstr}}</td>
+				<td>{{totals.SS.espnid}}</td>
+				<td>{{totals.SS.abs}}</td>
+				<td>{{totals.SS.tbs}}</td>
+				<td>{{totals.SS.rbis}}</td>
+				<td>{{totals.SS.bbs}}</td>
+				<td>{{totals.SS.sbs}}</td>
+				<td>{{totals.SS.runs}}</td>
+				<td>{{totals.SS.slug|floatformat:3}}</td>
+				<td>{{totals.SS.ptsabs|floatformat:3}}</td>
+				<td>{{totals.SS.pts}}</td>
+			</tr>
+			{% for i in SS %}
+			<tr class="child-rowSS" style="display:none">
+				<td>{{i.name}}</td>
+				<td>{{i.posstr}}</td>
+				<td>{{i.espnid}}</td>
+				<td>{{i.abs}}</td>
+				<td>{{i.tbs}}</td>
+				<td>{{i.rbis}}</td>
+				<td>{{i.bbs}}</td>
+				<td>{{i.sbs}}</td>
+				<td>{{i.runs}}</td>
+				<td>{{i.slug|floatformat:3}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
+
+			<tr class="parent" id="rowLF">
+				<td>{{totals.LF.posfullstr}}</td>
+				<td>{{totals.LF.posstr}}</td>
+				<td>{{totals.LF.espnid}}</td>
+				<td>{{totals.LF.abs}}</td>
+				<td>{{totals.LF.tbs}}</td>
+				<td>{{totals.LF.rbis}}</td>
+				<td>{{totals.LF.bbs}}</td>
+				<td>{{totals.LF.sbs}}</td>
+				<td>{{totals.LF.runs}}</td>
+				<td>{{totals.LF.slug|floatformat:3}}</td>
+				<td>{{totals.LF.ptsabs|floatformat:3}}</td>
+				<td>{{totals.LF.pts}}</td>
+			</tr>
+			{% for i in LF %}
+			<tr class="child-rowLF" style="display:none">
+				<td>{{i.name}}</td>
+				<td>{{i.posstr}}</td>
+				<td>{{i.espnid}}</td>
+				<td>{{i.abs}}</td>
+				<td>{{i.tbs}}</td>
+				<td>{{i.rbis}}</td>
+				<td>{{i.bbs}}</td>
+				<td>{{i.sbs}}</td>
+				<td>{{i.runs}}</td>
+				<td>{{i.slug|floatformat:3}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
+
+			<tr class="parent" id="rowCF">
+				<td>{{totals.CF.posfullstr}}</td>
+				<td>{{totals.CF.posstr}}</td>
+				<td>{{totals.CF.espnid}}</td>
+				<td>{{totals.CF.abs}}</td>
+				<td>{{totals.CF.tbs}}</td>
+				<td>{{totals.CF.rbis}}</td>
+				<td>{{totals.CF.bbs}}</td>
+				<td>{{totals.CF.sbs}}</td>
+				<td>{{totals.CF.runs}}</td>
+				<td>{{totals.CF.slug|floatformat:3}}</td>
+				<td>{{totals.CF.ptsabs|floatformat:3}}</td>
+				<td>{{totals.CF.pts}}</td>
+			</tr>
+			{% for i in CF %}
+			<tr class="child-rowCF" style="display:none">
+				<td>{{i.name}}</td>
+				<td>{{i.posstr}}</td>
+				<td>{{i.espnid}}</td>
+				<td>{{i.abs}}</td>
+				<td>{{i.tbs}}</td>
+				<td>{{i.rbis}}</td>
+				<td>{{i.bbs}}</td>
+				<td>{{i.sbs}}</td>
+				<td>{{i.runs}}</td>
+				<td>{{i.slug|floatformat:3}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
+
+			<tr class="parent" id="rowRF">
+				<td>{{totals.RF.posfullstr}}</td>
+				<td>{{totals.RF.posstr}}</td>
+				<td>{{totals.RF.espnid}}</td>
+				<td>{{totals.RF.abs}}</td>
+				<td>{{totals.RF.tbs}}</td>
+				<td>{{totals.RF.rbis}}</td>
+				<td>{{totals.RF.bbs}}</td>
+				<td>{{totals.RF.sbs}}</td>
+				<td>{{totals.RF.runs}}</td>
+				<td>{{totals.RF.slug|floatformat:3}}</td>
+				<td>{{totals.RF.ptsabs|floatformat:3}}</td>
+				<td>{{totals.RF.pts}}</td>
+			</tr>
+			{% for i in RF %}
+			<tr class="child-rowRF" style="display:none">
+				<td>{{i.name}}</td>
+				<td>{{i.posstr}}</td>
+				<td>{{i.espnid}}</td>
+				<td>{{i.abs}}</td>
+				<td>{{i.tbs}}</td>
+				<td>{{i.rbis}}</td>
+				<td>{{i.bbs}}</td>
+				<td>{{i.sbs}}</td>
+				<td>{{i.runs}}</td>
+				<td>{{i.slug|floatformat:3}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
+
+			<tr class="parent" id="rowDH">
+				<td>{{totals.DH.posfullstr}}</td>
+				<td>{{totals.DH.posstr}}</td>
+				<td>{{totals.DH.espnid}}</td>
+				<td>{{totals.DH.abs}}</td>
+				<td>{{totals.DH.tbs}}</td>
+				<td>{{totals.DH.rbis}}</td>
+				<td>{{totals.DH.bbs}}</td>
+				<td>{{totals.DH.sbs}}</td>
+				<td>{{totals.DH.runs}}</td>
+				<td>{{totals.DH.slug|floatformat:3}}</td>
+				<td>{{totals.DH.ptsabs|floatformat:3}}</td>
+				<td>{{totals.DH.pts}}</td>
+			</tr>
+			{% for i in DH %}
+			<tr class="child-rowDH" style="display:none">
+				<td>{{i.name}}</td>
+				<td>{{i.posstr}}</td>
+				<td>{{i.espnid}}</td>
+				<td>{{i.abs}}</td>
+				<td>{{i.tbs}}</td>
+				<td>{{i.rbis}}</td>
+				<td>{{i.bbs}}</td>
+				<td>{{i.sbs}}</td>
+				<td>{{i.runs}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.ptsabs|floatformat:3}}</td>
+				<td>{{i.pts}}</td>
+			</tr>
+		{% endfor %}
+		
+		<tr>
+			<td>Total</td>
+			<td>pos</td>
+			<td>espnid</td>
+			<td>{{ptotals.abs}}</th>
+			<td>{{ptotals.runs}}</th>
+			<td>{{ptotals.tbs}}</th>
+			<td>{{ptotals.rbis}}</th>
+			<td>{{ptotals.bbs}}</th>
+			<td>{{ptotals.sbs}}</th>
+			<td>{{ptotals.playpoints}}</th>
 		</tr>
-		{% for i in 1B %}
-		<tr class="child-row1B" style="display:none">
-			<td>{{i.name}}</td>
-			<td>{{i.posstr}}</td>
-			<td>{{i.espnid}}</td>
-			<td>{{i.teamname}}</td>
-			<td>{{i.abs}}</td>
-			<td>{{i.tbs}}</td>
-			<td>{{i.rbis}}</td>
-			<td>{{i.bbs}}</td>
-			<td>{{i.sbs}}</td>
-			<td>{{i.runs}}</td>
-			<td>{{i.slug}}</td>
-			<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-	
-		<tr class="parent" id="row2B">
-			<td>{{totals.2B.posfullstr}}</td>
-			<td>{{totals.2B.posstr}}</td>
-			<td>{{totals.2B.espnid}}</td>
-			<td>{{totals.2B.abs}}</td>
-			<td>{{totals.2B.tbs}}</td>
-			<td>{{totals.2B.rbis}}</td>
-			<td>{{totals.2B.bbs}}</td>
-			<td>{{totals.2B.sbs}}</td>
-			<td>{{totals.2B.runs}}</td>
-			<td>{{totals.2B.slug}}</td>
-			<td>{{totals.2B.ptsabs}}</td>
-		</tr>
-		{% for i in 2B %}
-		<tr class="child-row2B" style="display:none">
-			<td>{{i.name}}</td>
-			<td>{{i.posstr}}</td>
-			<td>{{i.espnid}}</td>
-			<td>{{i.teamname}}</td>
-			<td>{{i.abs}}</td>
-			<td>{{i.tbs}}</td>
-			<td>{{i.rbis}}</td>
-			<td>{{i.bbs}}</td>
-			<td>{{i.sbs}}</td>
-			<td>{{i.runs}}</td>
-			<td>{{i.slug}}</td>
-			<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-	
-		<tr class="parent" id="row3B">
-			<td>{{totals.3B.posfullstr}}</td>
-			<td>{{totals.3B.posstr}}</td>
-			<td>{{totals.3B.espnid}}</td>
-			<td>{{totals.3B.abs}}</td>
-			<td>{{totals.3B.tbs}}</td>
-			<td>{{totals.3B.rbis}}</td>
-			<td>{{totals.3B.bbs}}</td>
-			<td>{{totals.3B.sbs}}</td>
-			<td>{{totals.3B.runs}}</td>
-			<td>{{totals.3B.slug}}</td>
-			<td>{{totals.3B.ptsabs}}</td>
-		</tr>
-		{% for i in 3B %}
-		<tr class="child-row3B" style="display:none">
-			<td>{{i.name}}</td>
-			<td>{{i.posstr}}</td>
-			<td>{{i.espnid}}</td>
-			<td>{{i.teamname}}</td>
-			<td>{{i.abs}}</td>
-			<td>{{i.tbs}}</td>
-			<td>{{i.rbis}}</td>
-			<td>{{i.bbs}}</td>
-			<td>{{i.sbs}}</td>
-			<td>{{i.runs}}</td>
-			<td>{{i.slug}}</td>
-			<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-	
-		<tr class="parent" id="rowSS">
-			<td>{{totals.SS.posfullstr}}</td>
-			<td>{{totals.SS.posstr}}</td>
-			<td>{{totals.SS.espnid}}</td>
-			<td>{{totals.SS.abs}}</td>
-			<td>{{totals.SS.tbs}}</td>
-			<td>{{totals.SS.rbis}}</td>
-			<td>{{totals.SS.bbs}}</td>
-			<td>{{totals.SS.sbs}}</td>
-			<td>{{totals.SS.runs}}</td>
-			<td>{{totals.SS.slug}}</td>
-			<td>{{totals.SS.ptsabs}}</td>
-		</tr>
-		{% for i in SS %}
-		<tr class="child-rowSS" style="display:none">
-			<td>{{i.name}}</td>
-			<td>{{i.posstr}}</td>
-			<td>{{i.espnid}}</td>
-			<td>{{i.teamname}}</td>
-			<td>{{i.abs}}</td>
-			<td>{{i.tbs}}</td>
-			<td>{{i.rbis}}</td>
-			<td>{{i.bbs}}</td>
-			<td>{{i.sbs}}</td>
-			<td>{{i.runs}}</td>
-			<td>{{i.slug}}</td>
-			<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-	
-		<tr class="parent" id="rowLF">
-			<td>{{totals.LF.posfullstr}}</td>
-			<td>{{totals.LF.posstr}}</td>
-			<td>{{totals.LF.espnid}}</td>
-			<td>{{totals.LF.abs}}</td>
-			<td>{{totals.LF.tbs}}</td>
-			<td>{{totals.LF.rbis}}</td>
-			<td>{{totals.LF.bbs}}</td>
-			<td>{{totals.LF.sbs}}</td>
-			<td>{{totals.LF.runs}}</td>
-			<td>{{totals.LF.slug}}</td>
-			<td>{{totals.LF.ptsabs}}</td>
-		</tr>
-		{% for i in LF %}
-		<tr class="child-rowLF" style="display:none">
-			<td>{{i.name}}</td>
-			<td>{{i.posstr}}</td>
-			<td>{{i.espnid}}</td>
-			<td>{{i.teamname}}</td>
-			<td>{{i.abs}}</td>
-			<td>{{i.tbs}}</td>
-			<td>{{i.rbis}}</td>
-			<td>{{i.bbs}}</td>
-			<td>{{i.sbs}}</td>
-			<td>{{i.runs}}</td>
-			<td>{{i.slug}}</td>
-			<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-	
-		<tr class="parent" id="rowCF">
-			<td>{{totals.CF.posfullstr}}</td>
-			<td>{{totals.CF.posstr}}</td>
-			<td>{{totals.CF.espnid}}</td>
-			<td>{{totals.CF.abs}}</td>
-			<td>{{totals.CF.tbs}}</td>
-			<td>{{totals.CF.rbis}}</td>
-			<td>{{totals.CF.bbs}}</td>
-			<td>{{totals.CF.sbs}}</td>
-			<td>{{totals.CF.runs}}</td>
-			<td>{{totals.CF.slug}}</td>
-			<td>{{totals.CF.ptsabs}}</td>
-		</tr>
-		{% for i in CF %}
-		<tr class="child-rowCF" style="display:none">
-			<td>{{i.name}}</td>
-			<td>{{i.posstr}}</td>
-			<td>{{i.espnid}}</td>
-			<td>{{i.teamname}}</td>
-			<td>{{i.abs}}</td>
-			<td>{{i.tbs}}</td>
-			<td>{{i.rbis}}</td>
-			<td>{{i.bbs}}</td>
-			<td>{{i.sbs}}</td>
-			<td>{{i.runs}}</td>
-			<td>{{i.slug}}</td>
-			<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-	
-		<tr class="parent" id="rowRF">
-			<td>{{totals.RF.posfullstr}}</td>
-			<td>{{totals.RF.posstr}}</td>
-			<td>{{totals.RF.espnid}}</td>
-			<td>{{totals.RF.abs}}</td>
-			<td>{{totals.RF.tbs}}</td>
-			<td>{{totals.RF.rbis}}</td>
-			<td>{{totals.RF.bbs}}</td>
-			<td>{{totals.RF.sbs}}</td>
-			<td>{{totals.RF.runs}}</td>
-			<td>{{totals.RF.slug}}</td>
-			<td>{{totals.RF.ptsabs}}</td>
-		</tr>
-		{% for i in RF %}
-		<tr class="child-rowRF" style="display:none">
-			<td>{{i.name}}</td>
-			<td>{{i.posstr}}</td>
-			<td>{{i.espnid}}</td>
-			<td>{{i.teamname}}</td>
-			<td>{{i.abs}}</td>
-			<td>{{i.tbs}}</td>
-			<td>{{i.rbis}}</td>
-			<td>{{i.bbs}}</td>
-			<td>{{i.sbs}}</td>
-			<td>{{i.runs}}</td>
-			<td>{{i.slug}}</td>
-			<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-	
-		<tr class="parent" id="rowDH">
-			<td>{{totals.DH.posfullstr}}</td>
-			<td>{{totals.DH.posstr}}</td>
-			<td>{{totals.DH.espnid}}</td>
-			<td>{{totals.DH.abs}}</td>
-			<td>{{totals.DH.tbs}}</td>
-			<td>{{totals.DH.rbis}}</td>
-			<td>{{totals.DH.bbs}}</td>
-			<td>{{totals.DH.sbs}}</td>
-			<td>{{totals.DH.runs}}</td>
-			<td>{{totals.DH.slug}}</td>
-			<td>{{totals.DH.ptsabs}}</td>
-		</tr>
-		{% for i in DH %}
-		<tr class="child-rowDH" style="display:none">
-			<td>{{i.name}}</td>
-			<td>{{i.posstr}}</td>
-			<td>{{i.espnid}}</td>
-			<td>{{i.teamname}}</td>
-			<td>{{i.abs}}</td>
-			<td>{{i.tbs}}</td>
-			<td>{{i.rbis}}</td>
-			<td>{{i.bbs}}</td>
-			<td>{{i.sbs}}</td>
-			<td>{{i.runs}}</td>
-			<td>{{i.slug}}</td>
-			<td>{{i.ptsabs}}</td>
-		</tr>
-	{% endfor %}
-	</tbody>
-	<tr>
-		<th>Name</th>
-		<td>pos</th>
-		<td>espnid</th>
-		<td>{{sums.abs}}</th>
-		<td>{{sums.runs}}</th>
-		<td>{{sums.tbs}}</th>
-		<td>{{sums.rbis}}</th>
-		<td>{{sums.bbs}}</th>
-		<td>{{sums.sbs}}</th>
-		<td>{{sums.points}}</th>
-	</tr>
+		</tbody>
+		</table>
+
+		<table id="detail_table" class="detail">
+			<col style="width:80px;">
+			<col style="width:20px;">
+
+			<col style="width:40px;">
+			<col style="width:40px;">
+		<thead>
+			<tr>
+				<th>Team</th>
+				<th>IP</th>
+				<th>HITs</th>
+				<th>BBs</th>
+				<th>ERs</th>
+				<th>Ks</th>
+				<th>Wins</th>
+			</tr>
+
+		</thead>
+
+
+		<tbody>
+
+			<tr class="parent" id="rowPS">
+					<td>Pitchers</td><td>{{ptotals.ips}}</td><td>{{ptotals.phits}}</td><td>{{ptotals.pbbs}}</td><td>{{ptotals.ers}}</td><td>{{ptotals.ks}}</td><td>{{ptotals.ws}}</td><td>{{ptotals.era|floatformat:2}}</td><td>{{ptotals.pitchpoints}}</td>
+
+
+			</tr>
+			{% for i in pitchers %}
+				{% for x in Tigers %}
+					<td>{{x.name}}</td>
+					yyoyo
+				{% endfor %}
+			<tr class="child-rowPS" style="display:none">
+				<td>{{i.teamname}}</td>
+				<td>{{i.ips}}</td>
+				<td>{{i.phits}}</td>
+				<td>{{i.pbbs}}</td>
+				<td>{{i.ers}}</td>
+				<td>{{i.ks}}</td>
+				<td>{{i.ws}}</td>
+				<td>{{i.era|floatformat:2}}</td>
+				<td>{{i.whip|floatformat:2}}</td>
+
+			</tr>
+		{% endfor %}
+
+
+
 	</table>
 
-	<table id="detail_table" class="detail">
-		<col style="width:80px;">
-		<col style="width:20px;">
 
-		<col style="width:40px;">
-		<col style="width:40px;">
-	<thead>
-		<tr>
-			<th>Team</th>
-			<th>ips</th>
-			<th>hits</th>
-			<th>pbbs</th>
-			<th>ers</th>
-			<th>ks</th>
-			<th>PTS</th>
-		</tr>
+	<div id="placeholder" style="width:600px;height:300px;"></div>
 
-	</thead>
-	<tbody>
+	    <p>Example of loading data dynamically with AJAX. Percentage change in GDP (source: <a href="http://epp.eurostat.ec.europa.eu/tgm/table.do?tab=table&init=1&plugin=1&language=en&pcode=tsieb020">Eurostat</a>). Click the buttons below.</p>
 
-		<tr class="parent" id="rowC">
-				<td>Pitchers</td><td>{{ptotals.ips}}</td><td>{{ptotals.phits}}</td><td>{{ptotals.pbbs}}</td><td>{{ptotals.ers}}</td><td>{{ptotals.Ks}}</td><td>{{ptotals.Ws}}</td><td>{{ptotals.era}}</td><td>{{ptotals.points}}</td>
-				
+	    <p>The data is fetched over HTTP, in this case directly from text
+	    files. Usually the URL would point to some web server handler
+	    (e.g. a PHP page or Java/.NET/Python/Ruby on Rails handler) that
+	    extracts it from a database and serializes it to JSON.</p>
 
-		</tr>
-		{% for i in pitchers %}
-		<tr class="child-rowC" style="display:none">
-			<td>{{i.teamname}}
-			<td>{{i.ips}}</td>
-			<td>{{i.phits}}</td>
-			<td>{{i.pbbs}}</td>
-			<td>{{i.ers}}</td>
-			<td>{{i.ks}}</td>
-			<td>{{i.pts}}</td>
+	    <p>
+	      <input class="fetchSeries" type="button" value="First dataset"> -
+	      <a href="static/growth.json">data</a> -
+	      <span></span>
+	    </p>
 
-		</tr>
-	{% endfor %}
+	    <p>
+
+	      <input class="fetchSeries" type="button" value="Second dataset"> -
+	      <a href="data-japan-gdp-growth.json">data</a> -
+	      <span></span>
+	    </p>
+
+	    <p>
+	      <input class="fetchSeries" type="button" value="Third dataset"> -
+	      <a href="data-usa-gdp-growth.json">data</a> -
+	      <span></span>
+
+	    </p>
+
+	    <p>If you combine AJAX with setTimeout, you can poll the server
+	       for new data.</p>
+
+	    <p>
+	      <input class="dataUpdate" type="button" value="Poll for data">
+	    </p>
+	<script type="text/javascript">
+	$(function () {
+	    var options = {
+	        lines: { show: true },
+	        points: { show: false },
+	    };
+	    var data = [];
+	    var placeholder = $("#placeholder");
+
+	    $.plot(placeholder, data, options);
+		
+
+	    // fetch one series, adding to what we got
+	    var alreadyFetched = {};
+
+	    $("input.fetchSeries").click(function () {
+	        var button = $(this);
+
+	        // find the URL in the link right next to us 
+	        var dataurl = button.siblings('a').attr('href');
+
+	        // then fetch the data with jQuery
+	        function onDataReceived(series) {
+	            // extract the first coordinate pair so you can see that
+	            // data is now an ordinary Javascript object
+	            var firstcoordinate = '(' + series.data[0][0] + ', ' + series.data[0][1] + ')';
+
+	            button.siblings('span').text('Fetched ' + series.label + ', first point: ' + firstcoordinate);
+
+	            // let's add it to our current data
+	            if (!alreadyFetched[series.label]) {
+	                alreadyFetched[series.label] = true;
+	                data.push(series);
+	            }
+
+	            // and plot all we got
+	            $.plot(placeholder, data, options);
+	         }
+
+	        $.ajax({
+	            url: dataurl,
+	            method: 'GET',
+	            dataType: 'json',
+	            success: onDataReceived
+	        });
+	    });
+
+
+	    // initiate a recurring data update
+	    $("input.dataUpdate").click(function () {
+	        // reset data
+	        data = [];
+	        alreadyFetched = {};
+
+	        $.plot(placeholder, data, options);
+
+	        var iteration = 0;
+
+	        function fetchData() {
+	            ++iteration;
+
+	            function onDataReceived(series) {
+	                // we get all the data in one go, if we only got partial
+	                // data, we could merge it with what we already got
+	                data = [ series ];
+
+	                $.plot($("#placeholder"), data, options);
+	            }
+
+	            $.ajax({
+	                // usually, we'll just call the same URL, a script
+	                // connected to a database, but in this case we only
+	                // have static example files so we need to modify the
+	                // URL
+	                url: "data-eu-gdp-growth-" + iteration + ".json",
+	                method: 'GET',
+	                dataType: 'json',
+	                success: onDataReceived
+	            });
+
+	            if (iteration < 5)
+	                setTimeout(fetchData, 1000);
+	            else {
+	                data = [];
+	                alreadyFetched = {};
+	            }
+	        }
+
+	        setTimeout(fetchData, 1000);
+	    });
+	});
+	</script>
+
+</div>
+</div>
 
 
 
 
 
-</body>                                                                 
+
+
+
+
+
+</body>
+                                                                 
 </html>

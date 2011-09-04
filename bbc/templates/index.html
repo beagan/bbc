@@ -3,41 +3,245 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>Question Answers</title>
-    <style type="text/css">
-    	H1 {font-size: 20px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
-    	H2 {font-size: 18px; font-family: Helvetica, Verdana, Arial, sans-serif;background:#eee8a2; border: 1px solid #aaa; text-align: center;}
-    	H3 {font-size: 16px; font-variant:small-caps;font-family: Helvetica, Verdana, Arial, sans-serif;background:#c0c0c0; border: 1px solid #aaa;
-    	text-align: left;
-    	.post-tag {
-background-color:#E0EAF1;
-border-bottom:1px solid #3E6D8E;
-border-right:1px solid #7F9FB6;
-color:#3E6D8E;
-font-size:90%;
-line-height:2.4;
-margin:2px 2px 2px 0;
-padding:3px 4px;
-text-decoration:none;
-white-space:nowrap;
-}}
-
-	body {font-size: 12px; font-family: Verdana , sans-serif, Arial;}
-    	a:visited,a:link { font-size:14px; font-variant:small-caps; color: #000080; text-decoration:underline; text-transform:capitalize;}
-    	table { border: 0px solid #aaa; } 
-    	td { border-width: thin; 
-    	border-style: outset; }
-
-
-    </style>
+	<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 
 
 	{% block js %}
 	    
-	    <script src="http://code.jquery.com/jquery-1.6.2.js" type="text/javascript" charset="utf-8"></script>
-	    <script src="{{ STATIC_URL }}endless.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript" src="static/jquery.js"></script>
+	<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
+	
+	<script type="text/javascript" src="/static/jquery.tablesorter.js"></script> 				
+	<script type="text/javascript" src="/static/jquery.flot.js"></script>
+	<script type="text/javascript" src="/static/jquery.flot.pie.js"></script>
+    <script src="{{ STATIC_URL }}endless.js" type="text/javascript" charset="utf-8"></script>
 	{% endblock %}
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+	 		$('tr.parent').click(function(){
+					$(this).siblings('.child-'+this.id).toggle();
+			});
+			$('tr.child').hide().children('td');
+			$("tr").hover(function(){
+		    	$(this).css("background-color","#B01514");
+				$(this).css("color","white");
+				},function(){
+				  $(this).css("background-color","white");
+								$(this).css("color","black");
+		  	});
+
+			
+			
+		});
+	</script>
+
+
+	<script type="text/javascript">
+
+	$(function () {
+		var data = [];
+		var series = Math.floor(Math.random()*15)+1;
+
+		for( var i = 0; i < series; i++)
+		{
+			data[i] = { 
+				label: "Serie", 
+				data: Math.floor(Math.random()*100)+1 
+			}
+		}
+
+	  $.plot($("#interactive"), data, 
+		{
+			series: {
+				pie: { 
+					show: true,
+					highlight: {
+						opacity: 0.5
+					},
+					label: {
+						show: true,
+						customLabel: function(slice) {
+							var redraw = false;
+
+							var halfAngle = ((slice.startAngle + slice.slice.angle) + slice.startAngle) / 2;
+							var x = slice.center.left + Math.round(Math.cos(halfAngle) * (slice.radius / 1.35) );
+							var y = slice.center.top + Math.round(Math.sin(halfAngle) * (slice.radius / 1.35) );
+
+							var percent = parseFloat(slice.slice.percent).toFixed(2);
+
+							var html = '<span class="pieLabel" id="pieLabel' + slice.index + '" style="position:absolute;top:' + y + 'px;left:' + x + 'px;">' + percent + "% </span>";
+							slice.target.append(html);
+							var label = slice.target.children('#pieLabel' + slice.index);
+
+							var labelTop;
+							var labelLeft;
+
+							var lineTop;
+							var lineLeft;
+
+							if (x > slice.center.left) {
+								labelLeft = slice.center.left + slice.radius - (label.width() / 2);
+								lineLeft = labelLeft;
+							} else {
+								labelLeft = slice.center.left - slice.radius - (label.width() / 2);
+								lineLeft = labelLeft + label.width();
+							}
+
+							var slop = 5;
+
+
+							if (y > slice.center.top) {
+							   labelTop = (y - label.height() / 2) + slop;
+							   lineTop = labelTop + (label.height() / 2);
+							} else {
+							   labelTop = (y - label.height() / 2) - slop;
+							   lineTop = labelTop + (label.height() / 2) ;
+							}
+
+							label.css('top', labelTop);
+							label.css('left', labelLeft);
+
+							if (0 - labelTop > 0 || 0 - labelLeft > 0 
+							  || slice.canvas.height - (labelTop + label.height()) < 0 
+							  || slice.canvas.width - (labelLeft + label.width()) < 0) 
+								redraw = true;
+
+							ctx.save();
+
+
+							ctx.translate(-slice.center.left, -slice.center.top);
+
+							ctx.strokeStyle = "black";
+							ctx.lineWidth=1;
+							ctx.beginPath();
+
+							ctx.moveTo(x,y);
+
+							if (x > slice.center.left) {
+								ctx.lineTo(x + 3,lineTop);
+							} else {
+								ctx.lineTo(x - 3,lineTop);
+							} 
+							ctx.lineTo(lineLeft,lineTop);
+
+							ctx.stroke();
+
+							ctx.restore();
+
+							return redraw;
+
+						}
+	//                  radius: 1,
+	//	  				formatter: function(label, series){
+	//                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
+	//                    },
+	//                    background: { opacity: 0.8 }
+	                }
+				}
+			},
+			grid: {
+				hoverable: true,
+				clickable: true
+			},
+	        legend: {
+	            show: false
+	        }		
+		});
+		$("#interactive").bind("plothover", pieHover);
+		$("#interactive").bind("plotclick", pieClick);
+	});
+
+	function pieHover(event, pos, obj) 
+	{
+		if (!obj) 
+			return;
+
+		//var value = parseFloat(obj.series.data).toFixed(2);
+		var value = obj.series.data;
+
+		$("#hover").html('<span style="font-weight: bold; color: '+obj.series.color+'">'+obj.series.label + ': R$ ' + value + ' :%</span>');
+	}
+
+	function pieClick(event, pos, obj) 
+	{
+		if (!obj)
+			return;
+
+		percent = parseFloat(obj.series.percent).toFixed(2);
+		alert(''+obj.series.label+': '+percent+'%');
+	}
+
+
+	</script>
+		
+	<script type="text/javascript">
+	$(function () {
+	    var options = {
+	        lines: { show: true },
+	        points: { show: false },
+	    };
+	    var data = [];
+	    var placeholder = $("#placeholder");
+
+	    $.plot(placeholder, data, options);
+
+
+	    // fetch one series, adding to what we got
+	    var alreadyFetched = {};
+
+	    $("tr").click(function () {
+	        var button = $(this);
+			
+			var dataurl = "totalWeekPts?id=" + $(this).find("td").eq(1).html();
+	        // find the URL in the link right next to us 
+	        //var dataurl = button.siblings('a').attr('href');
+
+	        // then fetch the data with jQuery
+	        function onDataReceived(series) {
+	            // extract the first coordinate pair so you can see that
+	            // data is now an ordinary Javascript object
+	            var firstcoordinate = '(' + series.data[0][0] + ', ' + series.data[0][1] + ')';
+
+	            button.siblings('span').text('Fetched ' + series.label + ', first point: ' + firstcoordinate);
+
+	            // let's add it to our current data
+	            if (!alreadyFetched[series.label]) {
+	                alreadyFetched[series.label] = true;
+	                data.push(series);
+	            }
+
+	            // and plot all we got
+	            $.plot(placeholder, data, options);
+	         }
+
+	        $.ajax({
+	            url: dataurl,
+	            method: 'GET',
+	            dataType: 'json',
+	            success: onDataReceived
+	        });
+	    });
+
+
+	    
+	});
+	</script>
+	</head>
+	<div class="topbar">
+	<div class="fill">
+	<div class="container">
+		<h3><a href ="./">BBCstats</a></h3>
+			<ul>
+				<li class="">
+					<a href="./stats">Stats</a>
+				</li>
+			</ul>
+	</div>
+	</div>
+	</div>
 
 	<h2>Entries:</h2>
 
@@ -52,8 +256,12 @@ white-space:nowrap;
 		<input type="submit" value="View user"></input>
 
 	</form>
+	
+	<div class="content">
+	<div id="placeholder" style="width:85%;height:300px;horizontal-align:middle;"></div>
 
-
+    <div id="interactive" style="width:85%;height:300px;horizontal-align:middle;"></div>
+	<div id="hover"></div>
 </body>
 </html>
 

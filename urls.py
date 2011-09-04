@@ -15,6 +15,8 @@ urlpatterns = patterns('',
 	(r"^userrequest", 'bbc.views.viewPlayerStats'),
 	(r"^viewuserlog", 'bbc.views.viewTransactionLog'),
 	(r"^viewallusers", 'bbc.views.getAllUsers'),
+	(r"^totalDayPts", 'bbc.views.totalDayPt'),
+	(r"^totalWeekPts", 'bbc.views.totalWeekPt'),
 	
 	#(r"^$", 'bbcstats.views.HomeHandler'),
     # Uncomment the admin/doc line below to enable admin documentation:

@@ -3,9 +3,10 @@
 {%  paginate 25 objects using 'index_page' %}
 
 <table width="100%" border="0" cellspacing="0" cellpadding="1">
+	<tr><th>Name</th><th>Points</th></tr>
 {% for item in objects %}
 
-<tr><td><a href = "./posstats?id={{item.espnid}}">{{item.name}}</td>
+<tr><td><a href = "./posstats?id={{item.espnid}}">{{item.name}}</td><td>{{item.espnid}}</td>
 <td>{{item.totalpoints}}</td></tr>
 
 {% endfor %}
