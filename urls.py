@@ -17,6 +17,10 @@ urlpatterns = patterns('',
 	(r"^viewallusers", 'bbc.views.getAllUsers'),
 	(r"^totalDayPts", 'bbc.views.totalDayPt'),
 	(r"^totalWeekPts", 'bbc.views.totalWeekPt'),
+	(r"^teamPt", 'bbc.views.teamPt'),
+	(r"^playerUse", 'bbc.views.playerUse'),
+	(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/Users/Jason/bbcstats/static/' } ),
+	
 	
 	#(r"^$", 'bbcstats.views.HomeHandler'),
     # Uncomment the admin/doc line below to enable admin documentation:
