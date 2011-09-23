@@ -101,7 +101,7 @@ class TotalStats(models.Model):
 
 class TotalTeamStats(models.Model):
 	uid = models.ForeignKey(User)
-	key = models.BigIntegerField(primary_key=True)
+	key = models.AutoField(primary_key=True)
 	
 	teamid = models.IntegerField()
 	teamname = models.CharField(max_length=128)
@@ -139,7 +139,7 @@ class TotalTeamStats(models.Model):
 
 
 class PitcherEntry(models.Model):
-	pid = models.BigIntegerField(primary_key=True)
+	pid = models.AutoField(primary_key=True)
 	name = models.CharField(max_length=128)
 	gamenumber = models.IntegerField()
 	espnid = models.IntegerField()
@@ -158,7 +158,7 @@ class PitcherEntry(models.Model):
 
 
 class PlayerEntry(models.Model):
-	pid = models.BigIntegerField(primary_key=True)
+	pid = models.AutoField(primary_key=True)
 	name = models.CharField(max_length=128,null = True, blank = True)
 	gamenumber = models.IntegerField()
 	pos = models.CharField(max_length=128,null = True, blank = True)
@@ -179,11 +179,13 @@ class PlayerEntry(models.Model):
 
 class Entry(models.Model):
 	uid = models.ForeignKey(User,db_index=True)
-	eid = models.BigIntegerField(primary_key=True)
 	gamenumber = models.IntegerField(db_index = True)
+	
+	key = models.BigIntegerField(unique=True)
+	
 	points = models.IntegerField()
-	players = models.ManyToManyField(PlayerEntry)
-	pitchers = models.ManyToManyField(PitcherEntry)
+	players = models.ManyToManyField(PlayerEntry,db_index=True)
+	pitchers = models.ManyToManyField(PitcherEntry,db_index=True)
 	
 	p1salary = models.FloatField(null = True, blank = True)
 	p2salary = models.FloatField(null = True, blank = True)

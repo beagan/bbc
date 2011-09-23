@@ -70,7 +70,13 @@ def ipToOuts(ip):
 	return int(round(float(ip))) * 3 + ipFrac(ip)
 
 def totalStatsUpdater(user,maxgame):
-	
+	try:
+		tot = TotalStats.objects.get(uid=user)
+		if tot.maxgame >= maxgame:
+			print "none"
+			return
+	except:
+		x=1	
 	entry = Entry.objects.filter(uid=user)
 	
 	agg = entry.all().aggregate(Sum('abs'),Sum('tbs'),Sum('rbis'),Sum('bbs'),Sum('sbs'),Sum('runs'),Sum('phits'),Sum('pbbs'),Sum('ers'),Sum('ks'),Sum('ws'),Sum('rbiwin'),Sum('rbitie'),Sum('rbiloss'),Sum('runwin'),Sum('runtie'),Sum('runloss'),Sum('points'))
@@ -134,10 +140,11 @@ def totalStatsTeamUpdater(user,teamid,maxgame):
 	try:
 		tot = TotalTeamStats.objects.get(uid=user,teamid=teamid)
 		if tot.maxgame >= maxgame:
+			print "none"
 			return
 	except:
 		x=1	
-	pla = PlayerEntry.objects.filter(entry__uid=user).filter(teamid=teamid)
+	pla = PlayerEntry.objects.filter(teamid=teamid).filter(entry__uid=user)
 	#placount = pla.count()
 	totabs=0;tottbs=0;totrbis=0;totbbs=0;totsbs=0;totruns=0;totslug=0;totptsabs=0
 	if pla:
@@ -155,7 +162,7 @@ def totalStatsTeamUpdater(user,teamid,maxgame):
 			totslug = 0
 			totptsabs = 0
 	
-	pit = PitcherEntry.objects.filter(entry__uid=user).filter(teamid=teamid)
+	pit = PitcherEntry.objects.filter(teamid=teamid).filter(entry__uid=user)
 	#pitcount = pit.count()
 	totips = 0;totphits=0;totpbbs=0;toters=0;totks=0;totws=0;totera=0;totwhip=0
 	if pit:
@@ -203,8 +210,7 @@ def totalStatsTeamUpdater(user,teamid,maxgame):
 					totpitspresent = False
 					totplayspresent = False
 		key = user.espnid * 10000 + teamid
-		TotalTeamStats.objects.bulk_insert(key=key,
-										uid=user,
+		TotalTeamStats.objects.bulk_insert(uid=user,
 										teamid=teamid,
 										teamname="a",
 										abs=totabs,
@@ -254,9 +260,10 @@ def HomeHandler(request,template="index.html",extra_context=None):
 	#getDataNew(77704,c)
 	getDataNew(99345,c)
 	#getDataNew(100195,c)
-	#getAllUsers(c)
+	getAllUsers(c)
 	
-	Entry.objects.bulk_insert_commit()
+	#Entry.objects.bulk_insert_commit()
+	
 
 	#for x in User.objects.all():
 	#	for i in range(1,30):
@@ -928,7 +935,7 @@ def getDataNew(id,c):
 			
 			if e[3]=="True":
 				tpl = time.time()
-				ent = Entry(eid=key,uid=user,gamenumber=day,points=0)
+				ent = Entry(uid=user,gamenumber=day,points=0)
 				tpts = 0
 				abs = 0;tbs = 0;runs = 0;rbis = 0;bbs = 0;sbs = 0
 				ips = 0;phits = 0;pbbs = 0;ers = 0;ks = 0;ws = 0
@@ -961,7 +968,7 @@ def getDataNew(id,c):
 						else:
 							double = 0
 						
-						players.append({'pid': key, 'espnid': p[5], 'gamenumber': int(day), 'pos': p[2], 'bbcid':p[6], 'doubleheader': double, 'nogame': p[18], 'abs': p[10], 'runs': p[12], 'tbs' : p[15], 'rbis': p[13], 'bbs': p[11], 'sbs':p[14], 'pts': pts, 'teamid': p[7], 'teamname': teams.team[int(p[7])], 'name': name})
+						players.append({'espnid': p[5], 'gamenumber': int(day), 'pos': p[2], 'bbcid':p[6], 'doubleheader': double, 'nogame': p[18], 'abs': p[10], 'runs': p[12], 'tbs' : p[15], 'rbis': p[13], 'bbs': p[11], 'sbs':p[14], 'pts': pts, 'teamid': p[7], 'teamname': teams.team[int(p[7])], 'name': name})
 						#pp.append(pl)
 				
 				ent.p1salary=sal[0]
@@ -994,7 +1001,7 @@ def getDataNew(id,c):
 				pts = ipToOuts(ps[13]) + int(ps[17]) - int(ps[14]) - (3*int(ps[15])) - int(ps[16]) + (5*(int(ps[18])))
 				tpts += pts
 				
-				pitchers.append({'pid': key, 'name': name, 'espnid': ps[8], 'espnid2': ps[9], 'gamenumber': int(day), 'doubleheader': ps[19], 'nogame': ps[21], 'ip' : ps[13], 'hits': ps[14], 'ers' : ps[15], 'bbs': ps[16], 'ks': ps[17], 'w':ps[18], 'pts': pts, 'teamid': ps[10], 'teamname': teams.team[int(ps[10])]})
+				pitchers.append({'name': name, 'espnid': ps[8], 'espnid2': ps[9], 'gamenumber': int(day), 'doubleheader': ps[19], 'nogame': ps[21], 'ip' : ps[13], 'hits': ps[14], 'ers' : ps[15], 'bbs': ps[16], 'ks': ps[17], 'w':ps[18], 'pts': pts, 'teamid': ps[10], 'teamname': teams.team[int(ps[10])]})
 				
 				te = time.time()
 				
@@ -1042,7 +1049,7 @@ def getDataNew(id,c):
 				ent.points = tpts
 				
 				key = int(id) * 1000000 + day
-				Entry.objects.bulk_insert(uid=user,eid=key,points = tpts,gamenumber=int(day),pssalary = ps[11],p1salary=sal[0],p2salary=sal[1],p3salary=sal[2],p4salary=sal[3],p5salary=sal[4],p6salary=sal[5],p7salary=sal[6],p8salary=sal[7],p9salary=sal[8],abs=ent.abs, tbs = ent.tbs, rbis = ent.rbis, bbs = ent.bbs, sbs = ent.sbs, runs = ent.runs, ips = ent.ips, phits = ent.phits, pbbs = ent.pbbs, ers = ent.ers, ks =ent.ks, ws = ent.ws, slug = ent.slug, era = ent.era, whip = ent.whip, runwin = ent.runwin, runloss = ent.runloss, runtie = ent.runtie, rbiwin = ent.rbiwin, rbiloss = ent.rbiloss, rbitie = ent.rbitie, ptsabs = ent.ptsabs,players=players,pitchers=pitchers)
+				Entry.objects.bulk_insert(uid=user,key=key,points = tpts,gamenumber=int(day),pssalary = ps[11],p1salary=sal[0],p2salary=sal[1],p3salary=sal[2],p4salary=sal[3],p5salary=sal[4],p6salary=sal[5],p7salary=sal[6],p8salary=sal[7],p9salary=sal[8],abs=ent.abs, tbs = ent.tbs, rbis = ent.rbis, bbs = ent.bbs, sbs = ent.sbs, runs = ent.runs, ips = ent.ips, phits = ent.phits, pbbs = ent.pbbs, ers = ent.ers, ks =ent.ks, ws = ent.ws, slug = ent.slug, era = ent.era, whip = ent.whip, runwin = ent.runwin, runloss = ent.runloss, runtie = ent.runtie, rbiwin = ent.rbiwin, rbiloss = ent.rbiloss, rbitie = ent.rbitie, ptsabs = ent.ptsabs,players=players,pitchers=pitchers)
 				#print key
 				
 				#ent.save()
@@ -1053,14 +1060,15 @@ def getDataNew(id,c):
 				
 				tdayf = time.time()
 				#print tdayf-tdays
-				user.maxgame = end-1
+				user.maxgame = end
 				user.totalpoints = utpts
 				user.save()
 			tday2 = time.time()
+
+	Entry.objects.bulk_insert_commit(autoclobber=True)
 	tf = time.time()
-	
-	
-	#print 'total {0}'.format(tf-tt)
+		
+	print 'total {0}'.format(tf-tt)
 	#print 'players {0}'.format(tplayers)
 	#print 'pitchers {0}'.format(tpitchers)
 	#print 'entry {0}'.format(tentry)
@@ -1354,7 +1362,7 @@ def getAllUsers(c):
 			t2 = time.time()
 			print 'count {0}'.format(count)
 			if count % 50 == 0:
-				Entry.objects.bulk_insert_commit()
+				#Entry.objects.bulk_insert_commit()
 				for i in us:
 					#print "totalstats"
 					user = User.objects.get(espnid=i)
