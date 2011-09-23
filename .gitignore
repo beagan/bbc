@@ -1,4 +1,9 @@
 /profiling/models.py
 /profiling/models.pyc
 /profiling/
+<<<<<<< HEAD
+bbc/views.pyc
+=======
 /static/
+.DS_store
+>>>>>>> parent of 070e84c... Things are messed up, bulk not working without errors, going to rollback to see if can fix

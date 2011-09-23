@@ -4,18 +4,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>Question Answers</title>
 	<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
-
-		<script type="text/javascript" src="static/jquery.js"></script>
-		<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
-	    <script type="text/javascript" src="/static/endless.js"></script>
-		<script type="text/javascript" src="/static/jquery.tablesorter.js"></script> 				
-		<script type="text/javascript" src="/static/jquery.flot.js"></script>
-		<script type="text/javascript" src="/static/jquery.flot.pie.js"></script>
-
+  </head>
+  <body>
 
 
 	{% block js %}
-
+	    
+	<script type="text/javascript" src="static/jquery.js"></script>
+	<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
+	
+	<script type="text/javascript" src="/static/jquery.tablesorter.js"></script> 				
+	<script type="text/javascript" src="/static/jquery.flot.js"></script>
+	<script type="text/javascript" src="/static/jquery.flot.pie.js"></script>
+    <script src="{{ STATIC_URL }}endless.js" type="text/javascript" charset="utf-8"></script>
 	{% endblock %}
 
 	<script type="text/javascript">
@@ -44,50 +45,138 @@
 		var data = [];
 		var series = Math.floor(Math.random()*15)+1;
 
-		var dataurl = "teamPt?id=" + $(this).find("td").eq(1).html();
+		for( var i = 0; i < series; i++)
+		{
+			data[i] = { 
+				label: "Serie", 
+				data: Math.floor(Math.random()*100)+1 
+			}
+		}
 
-	    $("tr").click(function () {
-	        var button = $(this);
-			
-			var dataurl = "teamPt?id=" + $(this).find("td").eq(1).html();
-	        // find the URL in the link right next to us 
-	        //var dataurl = button.siblings('a').attr('href');
+	  $.plot($("#interactive"), data, 
+		{
+			series: {
+				pie: { 
+					show: true,
+					highlight: {
+						opacity: 0.5
+					},
+					label: {
+						show: true,
+						customLabel: function(slice) {
+							var redraw = false;
 
-	        // then fetch the data with jQuery
-	        function onDataReceived(series) {
-	            // extract the first coordinate pair so you can see that
-	            // data is now an ordinary Javascript object
-	            data = series
-				$.plot($("#interactive"), data,
-				{
-				    series: {
-				        pie: { 
-				            show: true
-				        }
-				    }
-				});
-	         }
+							var halfAngle = ((slice.startAngle + slice.slice.angle) + slice.startAngle) / 2;
+							var x = slice.center.left + Math.round(Math.cos(halfAngle) * (slice.radius / 1.35) );
+							var y = slice.center.top + Math.round(Math.sin(halfAngle) * (slice.radius / 1.35) );
 
-	        $.ajax({
-	            url: dataurl,
-	            method: 'GET',
-	            dataType: 'json',
-	            success: onDataReceived
-	        });
-	    });
+							var percent = parseFloat(slice.slice.percent).toFixed(2);
 
-		
+							var html = '<span class="pieLabel" id="pieLabel' + slice.index + '" style="position:absolute;top:' + y + 'px;left:' + x + 'px;">' + percent + "% </span>";
+							slice.target.append(html);
+							var label = slice.target.children('#pieLabel' + slice.index);
+
+							var labelTop;
+							var labelLeft;
+
+							var lineTop;
+							var lineLeft;
+
+							if (x > slice.center.left) {
+								labelLeft = slice.center.left + slice.radius - (label.width() / 2);
+								lineLeft = labelLeft;
+							} else {
+								labelLeft = slice.center.left - slice.radius - (label.width() / 2);
+								lineLeft = labelLeft + label.width();
+							}
+
+							var slop = 5;
+
+
+							if (y > slice.center.top) {
+							   labelTop = (y - label.height() / 2) + slop;
+							   lineTop = labelTop + (label.height() / 2);
+							} else {
+							   labelTop = (y - label.height() / 2) - slop;
+							   lineTop = labelTop + (label.height() / 2) ;
+							}
+
+							label.css('top', labelTop);
+							label.css('left', labelLeft);
+
+							if (0 - labelTop > 0 || 0 - labelLeft > 0 
+							  || slice.canvas.height - (labelTop + label.height()) < 0 
+							  || slice.canvas.width - (labelLeft + label.width()) < 0) 
+								redraw = true;
+
+							ctx.save();
+
+
+							ctx.translate(-slice.center.left, -slice.center.top);
+
+							ctx.strokeStyle = "black";
+							ctx.lineWidth=1;
+							ctx.beginPath();
+
+							ctx.moveTo(x,y);
+
+							if (x > slice.center.left) {
+								ctx.lineTo(x + 3,lineTop);
+							} else {
+								ctx.lineTo(x - 3,lineTop);
+							} 
+							ctx.lineTo(lineLeft,lineTop);
+
+							ctx.stroke();
+
+							ctx.restore();
+
+							return redraw;
+
+						}
+	//                  radius: 1,
+	//	  				formatter: function(label, series){
+	//                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
+	//                    },
+	//                    background: { opacity: 0.8 }
+	                }
+				}
+			},
+			grid: {
+				hoverable: true,
+				clickable: true
+			},
+	        legend: {
+	            show: false
+	        }		
+		});
+		$("#interactive").bind("plothover", pieHover);
+		$("#interactive").bind("plotclick", pieClick);
 	});
+
+	function pieHover(event, pos, obj) 
+	{
+		if (!obj) 
+			return;
+
+		//var value = parseFloat(obj.series.data).toFixed(2);
+		var value = obj.series.data;
+
+		$("#hover").html('<span style="font-weight: bold; color: '+obj.series.color+'">'+obj.series.label + ': R$ ' + value + ' :%</span>');
+	}
+
+	function pieClick(event, pos, obj) 
+	{
+		if (!obj)
+			return;
+
+		percent = parseFloat(obj.series.percent).toFixed(2);
+		alert(''+obj.series.label+': '+percent+'%');
+	}
 
 
 	</script>
-
-
-
-
-
-
-
+		
 	<script type="text/javascript">
 	$(function () {
 	    var options = {
@@ -141,7 +230,6 @@
 	});
 	</script>
 	</head>
-	<body>
 	<div class="topbar">
 	<div class="fill">
 	<div class="container">
