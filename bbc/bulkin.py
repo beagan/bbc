@@ -271,8 +271,8 @@ class BulkInsert(models.Manager):
                 
         except Exception, e:
             print self
-            self.reset()
-            raise Exception, e
+            #self.reset()
+            #raise Exception, e
             
         #Dispatch Post Save Signals
         if send_post_save:
@@ -549,6 +549,9 @@ class BulkInsert(models.Manager):
         
             for q in queue.values()[start:end]:
                 if primary.name not in q:
+                    print "this is the integrity error"
+                    print primary.name
+                    print q
                     raise Exception, "Integrity Error. Object %s could not be inserted" % ', '.join([unicode(k).encode('utf8') + ' : ' + unicode(v).encode('utf8') for k,v in q.items()])
 
             start = end

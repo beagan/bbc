@@ -1,4 +1,5 @@
 from django.db import models
+from bulkin import BulkInsert
 
 class User (models.Model):
 	uid = models.AutoField(primary_key=True)
@@ -95,15 +96,13 @@ class TotalStats(models.Model):
 	rbitie = models.IntegerField(default = 0,null = True, blank = True)
 	
 	ptsabs = models.FloatField(null = True, blank = True)
+	objects = BulkInsert()
 
 
 class TotalTeamStats(models.Model):
 	uid = models.ForeignKey(User)
-<<<<<<< HEAD
+
 	tid = models.AutoField(primary_key=True)
-=======
-	key = models.BigIntegerField(primary_key=True)
->>>>>>> parent of 070e84c... Things are messed up, bulk not working without errors, going to rollback to see if can fix
 	
 	teamid = models.IntegerField()
 	teamname = models.CharField(max_length=128)
@@ -133,22 +132,27 @@ class TotalTeamStats(models.Model):
 	
 	points = models.IntegerField(null = True, blank = True)
 	
-	playspresent = models.BooleanField(null = False, blank = False)
-	pitspresent = models.BooleanField(null = False, blank = False)
+	playspresent = models.IntegerField(null = False, blank = False)
+	pitspresent = models.IntegerField(null = False, blank = False)
 	
 	ptsabs = models.FloatField(null = True, blank = True)
-
+	
+	class Meta:
+	    unique_together = ('uid', 'teamid',)
+	
+	
+	objects = BulkInsert()
 
 class PitcherEntry(models.Model):
-	pid = models.BigIntegerField(primary_key=True)
+	pid = models.IntegerField(primary_key=True)
 	name = models.CharField(max_length=128)
 	gamenumber = models.IntegerField()
 	espnid = models.IntegerField()
 	espnid2 = models.IntegerField()
 	teamid = models.IntegerField()
 	teamname = models.CharField(max_length=128)
-	doubleheader = models.BooleanField()
-	nogame = models.BooleanField()
+	doubleheader = models.IntegerField(default=0)
+	nogame = models.IntegerField(default=0)
 	ip = models.FloatField()
 	hits = models.IntegerField()
 	ers = models.IntegerField()
@@ -156,38 +160,35 @@ class PitcherEntry(models.Model):
 	ks = models.IntegerField()
 	w = models.IntegerField()
 	pts = models.IntegerField()
+	objects = BulkInsert()
 
 
 class PlayerEntry(models.Model):
-	pid = models.BigIntegerField(primary_key=True)
+	pid = models.IntegerField(primary_key=True)
 	name = models.CharField(max_length=128,null = True, blank = True)
 	gamenumber = models.IntegerField()
-	pos = models.CharField(max_length=128,null = True, blank = True)
-	espnid = models.IntegerField()
+	pos = models.CharField(max_length=128,null = True, blank = True,db_index=True)
+	espnid = models.IntegerField(db_index=True)
 	bbcid = models.IntegerField(null = True, blank = True)
-	teamid = models.IntegerField(null = True, blank = True)
+	teamid = models.IntegerField(null = True, blank = True,db_index=True)
 	teamname = models.CharField(max_length=128)
-	doubleheader = models.BooleanField(default = True, blank = True)
-	nogame = models.BooleanField(default = True, blank = True)
-	abs = models.IntegerField(null = True, blank = True)
-	runs = models.IntegerField(null = True, blank = True)
-	tbs = models.IntegerField(null = True, blank = True)
-	rbis = models.IntegerField(null = True, blank = True)
-	bbs = models.IntegerField(null = True, blank = True)
-	sbs = models.IntegerField(null = True, blank = True)
+	doubleheader = models.IntegerField(default = 0, blank = True)
+	nogame = models.IntegerField(default = 0, blank = True)
+	abs = models.IntegerField(null = True, blank = True,db_index=True)
+	runs = models.IntegerField(null = True, blank = True,db_index=True)
+	tbs = models.IntegerField(null = True, blank = True,db_index=True)
+	rbis = models.IntegerField(null = True, blank = True,db_index=True)
+	bbs = models.IntegerField(null = True, blank = True,db_index=True)
+	sbs = models.IntegerField(null = True, blank = True,db_index=True)
 	pts = models.IntegerField(null = True, blank = True)
+	objects = BulkInsert()
 
 
 class Entry(models.Model):
-<<<<<<< HEAD
 	uid = models.ForeignKey(User)
-	eid = models.BigIntegerField(primary_key=True)
+	eid = models.IntegerField(primary_key=True)
 	gamenumber = models.IntegerField()
-=======
-	uid = models.ForeignKey(User,db_index=True)
-	eid = models.BigIntegerField(primary_key=True)
-	gamenumber = models.IntegerField(db_index = True)
->>>>>>> parent of 070e84c... Things are messed up, bulk not working without errors, going to rollback to see if can fix
+	
 	points = models.IntegerField()
 	players = models.ManyToManyField(PlayerEntry)
 	pitchers = models.ManyToManyField(PitcherEntry)
@@ -230,6 +231,7 @@ class Entry(models.Model):
 	rbitie = models.IntegerField(default = 0,null = True, blank = True)
 	
 	ptsabs = models.FloatField(null = True, blank = True)
+	objects = BulkInsert()
 
 
 class PositionPlayerStats(models.Model):
