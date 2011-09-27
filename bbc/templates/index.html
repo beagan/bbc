@@ -3,170 +3,176 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>Question Answers</title>
-	<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
-  </head>
-  <body>
+<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="static/jquery.js"></script>
+<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/static/endless.js"></script>
+<script type="text/javascript" src="/static/jquery.tablesorter.js"></script>
+<script type="text/javascript" src="/static/jquery.flot.js"></script>
+<script type="text/javascript" src="/static/jquery.flot.pie.js"></script>
 
 
-	{% block js %}
-	    
-	<script type="text/javascript" src="static/jquery.js"></script>
-	<link href="static/bootstrap-1.1.1.css" rel="stylesheet" type="text/css" />
-	
-	<script type="text/javascript" src="/static/jquery.tablesorter.js"></script> 				
-	<script type="text/javascript" src="/static/jquery.flot.js"></script>
-	<script type="text/javascript" src="/static/jquery.flot.pie.js"></script>
-    <script src="{{ STATIC_URL }}endless.js" type="text/javascript" charset="utf-8"></script>
-	{% endblock %}
 
-	<script type="text/javascript">
-		$(document).ready(function () {
-	 		$('tr.parent').click(function(){
-					$(this).siblings('.child-'+this.id).toggle();
-			});
-			$('tr.child').hide().children('td');
-			$("tr").hover(function(){
-		    	$(this).css("background-color","#B01514");
-				$(this).css("color","white");
-				},function(){
-				  $(this).css("background-color","white");
-								$(this).css("color","black");
-		  	});
+{% block js %}
 
-			
-			
-		});
-	</script>
+{% endblock %}
+
+<script type="text/javascript">
+$(document).ready(function () {
+$('tr.parent').click(function(){
+$(this).siblings('.child-'+this.id).toggle();
+});
+$('tr.child').hide().children('td');
+$("tr").hover(function(){
+$(this).css("background-color","#B01514");
+$(this).css("color","white");
+},function(){
+$(this).css("background-color","white");
+$(this).css("color","black");
+});
 
 
-	<script type="text/javascript">
 
-	$(function () {
-		var data = [];
-		var series = Math.floor(Math.random()*15)+1;
-
-		var dataurl = "teamPt?id=" + $(this).find("td").eq(1).html();
-		
-		        $("tr").click(function () {
-		            var button = $(this);
-		            
-		           var dataurl = "teamPt?id=" + $(this).find("td").eq(1).html();
-	            // find the URL in the link right next to us 
-		            //var dataurl = button.siblings('a').attr('href');
-		
-		            // then fetch the data with jQuery
-		            function onDataReceived(series) {
-		                // extract the first coordinate pair so you can see that
-		                // data is now an ordinary Javascript object
-		                data = series
-		                $.plot($("#interactive"), data,
-		                {
-		                    series: {
-		                        pie: { 
-		                            show: true
-		                        }
-		                    }
-		                });
-		             }
-		
-		           $.ajax({
-		                url: dataurl,
-		                method: 'GET',
-		                dataType: 'json',
-		                success: onDataReceived
-		            });
-		        });
-		
-		        
-		     });
-
-	</script>
-		
-	<script type="text/javascript">
-	$(function () {
-	    var options = {
-	        lines: { show: true },
-	        points: { show: false },
-	    };
-	    var data = [];
-	    var placeholder = $("#placeholder");
-
-	    $.plot(placeholder, data, options);
+});
+</script>
 
 
-	    // fetch one series, adding to what we got
-	    var alreadyFetched = {};
+<script type="text/javascript">
 
-	    $("tr").click(function () {
-	        var button = $(this);
-			
-			var dataurl = "totalWeekPts?id=" + $(this).find("td").eq(1).html();
-	        // find the URL in the link right next to us 
-	        //var dataurl = button.siblings('a').attr('href');
+$(function () {
+var data = [];
+var series = Math.floor(Math.random()*15)+1;
 
-	        // then fetch the data with jQuery
-	        function onDataReceived(series) {
-	            // extract the first coordinate pair so you can see that
-	            // data is now an ordinary Javascript object
-	            var firstcoordinate = '(' + series.data[0][0] + ', ' + series.data[0][1] + ')';
+var dataurl = "teamPt?id=" + $(this).find("td").eq(1).html();
 
-	            button.siblings('span').text('Fetched ' + series.label + ', first point: ' + firstcoordinate);
+$("tr").click(function () {
+var button = $(this);
 
-	            // let's add it to our current data
-	            if (!alreadyFetched[series.label]) {
-	                alreadyFetched[series.label] = true;
-	                data.push(series);
-	            }
+var dataurl = "teamPt?id=" + $(this).find("td").eq(1).html();
+// find the URL in the link right next to us
+//var dataurl = button.siblings('a').attr('href');
 
-	            // and plot all we got
-	            $.plot(placeholder, data, options);
-	         }
+// then fetch the data with jQuery
+function onDataReceived(series) {
+// extract the first coordinate pair so you can see that
+// data is now an ordinary Javascript object
+data = series
+$.plot($("#interactive"), data,
+{
+series: {
+pie: {
+show: true
+}
+}
+});
+}
 
-	        $.ajax({
-	            url: dataurl,
-	            method: 'GET',
-	            dataType: 'json',
-	            success: onDataReceived
-	        });
-	    });
-
-
-	    
-	});
-	</script>
-	</head>
-	<div class="topbar">
-	<div class="fill">
-	<div class="container">
-		<h3><a href ="./">BBCstats</a></h3>
-			<ul>
-				<li class="">
-					<a href="./stats">Stats</a>
-				</li>
-			</ul>
-	</div>
-	</div>
-	</div>
-
-	<h2>Entries:</h2>
-
-	<div class="endless_page_template">
-	    {% include "index_page.html" %}
-	</div>
+$.ajax({
+url: dataurl,
+method: 'GET',
+dataType: 'json',
+success: onDataReceived
+});
+});
 
 
-	<form method="POST" action="./userrequest">{% csrf_token %}
-		<textarea name="uid" cols="60" rows="1">Type your user id here</textarea><br/>
+});
 
-		<input type="submit" value="View user"></input>
 
-	</form>
-	
-	<div class="content">
-	<div id="placeholder" style="width:85%;height:300px;horizontal-align:middle;"></div>
+</script>
+
+
+
+
+
+
+
+<script type="text/javascript">
+$(function () {
+var options = {
+lines: { show: true },
+points: { show: false },
+};
+var data = [];
+var placeholder = $("#placeholder");
+
+$.plot(placeholder, data, options);
+
+
+// fetch one series, adding to what we got
+var alreadyFetched = {};
+
+$("tr").click(function () {
+var button = $(this);
+
+var dataurl = "totalWeekPts?id=" + $(this).find("td").eq(1).html();
+// find the URL in the link right next to us
+//var dataurl = button.siblings('a').attr('href');
+
+// then fetch the data with jQuery
+function onDataReceived(series) {
+// extract the first coordinate pair so you can see that
+// data is now an ordinary Javascript object
+var firstcoordinate = '(' + series.data[0][0] + ', ' + series.data[0][1] + ')';
+
+button.siblings('span').text('Fetched ' + series.label + ', first point: ' + firstcoordinate);
+
+// let's add it to our current data
+if (!alreadyFetched[series.label]) {
+alreadyFetched[series.label] = true;
+data.push(series);
+}
+
+// and plot all we got
+$.plot(placeholder, data, options);
+}
+
+$.ajax({
+url: dataurl,
+method: 'GET',
+dataType: 'json',
+success: onDataReceived
+});
+});
+
+
+
+});
+</script>
+</head>
+<body>
+<div class="topbar">
+<div class="fill">
+<div class="container">
+<h3><a href ="./">BBCstats</a></h3>
+<ul>
+<li class="">
+<a href="./stats">Stats</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<h2>Entries:</h2>
+
+<div class="endless_page_template">
+{% include "index_page.html" %}
+</div>
+
+
+<form method="POST" action="./userrequest">{% csrf_token %}
+<textarea name="uid" cols="60" rows="1">Type your user id here</textarea><br/>
+
+<input type="submit" value="View user"></input>
+
+</form>
+
+<div class="content">
+<div id="placeholder" style="width:85%;height:300px;horizontal-align:middle;"></div>
 
     <div id="interactive" style="width:85%;height:300px;horizontal-align:middle;"></div>
-	<div id="hover"></div>
+<div id="hover"></div>
 </body>
 </html>
-

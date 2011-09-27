@@ -1,13 +1,22 @@
 *.pyc
 *.import
-
+*.json
 /profiling/
+db.db
+settings.py
 
 /static/
-.DS_store
+
+*.DS_store
 
 bbc/views.pyc
 
 bbc/teams.pyc
 
 bbc/bulkin.pyc
+
+bbc/.DS_Store
+
+.DS_Store
+
+.DS_Store
